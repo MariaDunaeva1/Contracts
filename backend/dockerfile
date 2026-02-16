@@ -2,8 +2,9 @@ FROM golang:1.23-alpine
 
 WORKDIR /app
 
-# Instalar dependencias del sistema
-RUN apk add --no-cache git
+# Instalar dependencias del sistema y Python/Kaggle CLI
+RUN apk add --no-cache git python3 py3-pip && \
+    pip install kaggle --break-system-packages
 
 COPY go.mod ./
 # Descargar dependencias explícitamente y verificar

@@ -10,6 +10,9 @@ type Config struct {
 	MinioUser     string
 	MinioPassword string
 	MinioUseSSL   bool
+
+	KaggleUsername string
+	KaggleKey      string
 }
 
 func LoadConfig() *Config {
@@ -19,6 +22,8 @@ func LoadConfig() *Config {
 		MinioUser:     getEnv("MINIO_ROOT_USER", "minioadmin"),
 		MinioPassword: getEnv("MINIO_ROOT_PASSWORD", "minioadmin"),
 		MinioUseSSL:   getEnv("MINIO_USE_SSL", "false") == "true",
+		KaggleUsername: getEnv("KAGGLE_USERNAME", ""),
+		KaggleKey:      getEnv("KAGGLE_KEY", ""),
 	}
 }
 

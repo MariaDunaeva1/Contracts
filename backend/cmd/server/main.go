@@ -4,6 +4,7 @@ import (
 	"finetune-studio/internal/config"
 	"finetune-studio/internal/database"
 	"finetune-studio/internal/handlers"
+	"finetune-studio/internal/services/kaggle"
 	"finetune-studio/internal/storage"
 	"finetune-studio/internal/worker"
 	"log"
@@ -78,8 +79,11 @@ func main() {
 		v1.DELETE("/jobs/:id", handlers.CancelJob)
 	}
 
+	// Initialize Kaggle Service
+	kaggleSvc := kaggle.NewService("/tmp/kaggle_workdir")
+
 	// Initialize Worker Pool
-	worker.Pool = worker.NewWorkerPool(5)
+	worker.Pool = worker.NewWorkerPool(5, kaggleSvc)
 	worker.Pool.Start()
 
 	log.Println("🚀 Server running on :8080")
