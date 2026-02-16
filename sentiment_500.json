@@ -1,0 +1,2002 @@
+[
+  {
+    "text": "I love this product! (Sample 0)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 1)",
+    "label": "neutral"
+  },
+  {
+    "text": "Decent for the price. (Sample 2)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very disappointed. (Sample 3)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 4)",
+    "label": "negative"
+  },
+  {
+    "text": "Not bad, not great. (Sample 5)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 6)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 7)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 8)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 9)",
+    "label": "negative"
+  },
+  {
+    "text": "Decent for the price. (Sample 10)",
+    "label": "neutral"
+  },
+  {
+    "text": "Decent for the price. (Sample 11)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 12)",
+    "label": "negative"
+  },
+  {
+    "text": "Terrible service. (Sample 13)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 14)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 15)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 16)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 17)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 18)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 19)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 20)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 21)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 22)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 23)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 24)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 25)",
+    "label": "negative"
+  },
+  {
+    "text": "Best purchase ever. (Sample 26)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 27)",
+    "label": "positive"
+  },
+  {
+    "text": "Amazing experience. (Sample 28)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 29)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 30)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 31)",
+    "label": "neutral"
+  },
+  {
+    "text": "Great service. (Sample 32)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 33)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 34)",
+    "label": "positive"
+  },
+  {
+    "text": "One star. (Sample 35)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 36)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 37)",
+    "label": "negative"
+  },
+  {
+    "text": "It was okay. (Sample 38)",
+    "label": "neutral"
+  },
+  {
+    "text": "Average performance. (Sample 39)",
+    "label": "neutral"
+  },
+  {
+    "text": "One star. (Sample 40)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 41)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 42)",
+    "label": "neutral"
+  },
+  {
+    "text": "Average performance. (Sample 43)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 44)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 45)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 46)",
+    "label": "neutral"
+  },
+  {
+    "text": "Customer support was rude. (Sample 47)",
+    "label": "negative"
+  },
+  {
+    "text": "Fantastic quality. (Sample 48)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 49)",
+    "label": "neutral"
+  },
+  {
+    "text": "Customer support was rude. (Sample 50)",
+    "label": "negative"
+  },
+  {
+    "text": "One star. (Sample 51)",
+    "label": "negative"
+  },
+  {
+    "text": "Arrived damaged. (Sample 52)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 53)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 54)",
+    "label": "positive"
+  },
+  {
+    "text": "Waste of money. (Sample 55)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 56)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 57)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 58)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 59)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 60)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 61)",
+    "label": "negative"
+  },
+  {
+    "text": "Terrible service. (Sample 62)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 63)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 64)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 65)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 66)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 67)",
+    "label": "positive"
+  },
+  {
+    "text": "Terrible service. (Sample 68)",
+    "label": "negative"
+  },
+  {
+    "text": "Standard delivery. (Sample 69)",
+    "label": "neutral"
+  },
+  {
+    "text": "Poor quality. (Sample 70)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 71)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 72)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 73)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 74)",
+    "label": "negative"
+  },
+  {
+    "text": "Not bad, not great. (Sample 75)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 76)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very disappointed. (Sample 77)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 78)",
+    "label": "positive"
+  },
+  {
+    "text": "Not bad, not great. (Sample 79)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 80)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 81)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 82)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 83)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 84)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 85)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 86)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 87)",
+    "label": "negative"
+  },
+  {
+    "text": "Not worth it. (Sample 88)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 89)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 90)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 91)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 92)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 93)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 94)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 95)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 96)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 97)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 98)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 99)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 100)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 101)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 102)",
+    "label": "neutral"
+  },
+  {
+    "text": "Average performance. (Sample 103)",
+    "label": "neutral"
+  },
+  {
+    "text": "Faulty item. (Sample 104)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 105)",
+    "label": "negative"
+  },
+  {
+    "text": "It was okay. (Sample 106)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 107)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 108)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 109)",
+    "label": "positive"
+  },
+  {
+    "text": "Mixed feelings. (Sample 110)",
+    "label": "neutral"
+  },
+  {
+    "text": "Faulty item. (Sample 111)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 112)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 113)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 114)",
+    "label": "positive"
+  },
+  {
+    "text": "Amazing experience. (Sample 115)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 116)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 117)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 118)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 119)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 120)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 121)",
+    "label": "neutral"
+  },
+  {
+    "text": "Highly recommended. (Sample 122)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 123)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 124)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 125)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 126)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 127)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 128)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 129)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 130)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 131)",
+    "label": "negative"
+  },
+  {
+    "text": "Decent for the price. (Sample 132)",
+    "label": "neutral"
+  },
+  {
+    "text": "Poor quality. (Sample 133)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 134)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 135)",
+    "label": "neutral"
+  },
+  {
+    "text": "Amazing experience. (Sample 136)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 137)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 138)",
+    "label": "negative"
+  },
+  {
+    "text": "Waste of money. (Sample 139)",
+    "label": "negative"
+  },
+  {
+    "text": "Very disappointed. (Sample 140)",
+    "label": "negative"
+  },
+  {
+    "text": "Not worth it. (Sample 141)",
+    "label": "negative"
+  },
+  {
+    "text": "Terrible service. (Sample 142)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 143)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 144)",
+    "label": "neutral"
+  },
+  {
+    "text": "Decent for the price. (Sample 145)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 146)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 147)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 148)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 149)",
+    "label": "neutral"
+  },
+  {
+    "text": "Decent for the price. (Sample 150)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 151)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 152)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 153)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 154)",
+    "label": "neutral"
+  },
+  {
+    "text": "It was okay. (Sample 155)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 156)",
+    "label": "negative"
+  },
+  {
+    "text": "Nothing special. (Sample 157)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 158)",
+    "label": "negative"
+  },
+  {
+    "text": "Met requirements. (Sample 159)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 160)",
+    "label": "positive"
+  },
+  {
+    "text": "Waste of money. (Sample 161)",
+    "label": "negative"
+  },
+  {
+    "text": "Very disappointed. (Sample 162)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 163)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 164)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 165)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 166)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 167)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 168)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 169)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 170)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 171)",
+    "label": "negative"
+  },
+  {
+    "text": "Will buy again. (Sample 172)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 173)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 174)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 175)",
+    "label": "negative"
+  },
+  {
+    "text": "Very disappointed. (Sample 176)",
+    "label": "negative"
+  },
+  {
+    "text": "It was okay. (Sample 177)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 178)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 179)",
+    "label": "negative"
+  },
+  {
+    "text": "Best purchase ever. (Sample 180)",
+    "label": "positive"
+  },
+  {
+    "text": "Customer support was rude. (Sample 181)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 182)",
+    "label": "neutral"
+  },
+  {
+    "text": "Faulty item. (Sample 183)",
+    "label": "negative"
+  },
+  {
+    "text": "Standard delivery. (Sample 184)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 185)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 186)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 187)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 188)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 189)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 190)",
+    "label": "positive"
+  },
+  {
+    "text": "Not bad, not great. (Sample 191)",
+    "label": "neutral"
+  },
+  {
+    "text": "Faulty item. (Sample 192)",
+    "label": "negative"
+  },
+  {
+    "text": "Nothing special. (Sample 193)",
+    "label": "neutral"
+  },
+  {
+    "text": "Poor quality. (Sample 194)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 195)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 196)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 197)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 198)",
+    "label": "positive"
+  },
+  {
+    "text": "Will buy again. (Sample 199)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 200)",
+    "label": "positive"
+  },
+  {
+    "text": "Mixed feelings. (Sample 201)",
+    "label": "neutral"
+  },
+  {
+    "text": "It works. (Sample 202)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 203)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 204)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 205)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 206)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 207)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 208)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 209)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 210)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 211)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 212)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 213)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 214)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 215)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 216)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 217)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 218)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 219)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 220)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 221)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 222)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 223)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 224)",
+    "label": "neutral"
+  },
+  {
+    "text": "One star. (Sample 225)",
+    "label": "negative"
+  },
+  {
+    "text": "One star. (Sample 226)",
+    "label": "negative"
+  },
+  {
+    "text": "Not worth it. (Sample 227)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 228)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 229)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 230)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 231)",
+    "label": "positive"
+  },
+  {
+    "text": "Amazing experience. (Sample 232)",
+    "label": "positive"
+  },
+  {
+    "text": "Not bad, not great. (Sample 233)",
+    "label": "neutral"
+  },
+  {
+    "text": "It was okay. (Sample 234)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 235)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 236)",
+    "label": "positive"
+  },
+  {
+    "text": "Amazing experience. (Sample 237)",
+    "label": "positive"
+  },
+  {
+    "text": "Highly recommended. (Sample 238)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 239)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 240)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 241)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 242)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 243)",
+    "label": "positive"
+  },
+  {
+    "text": "Will buy again. (Sample 244)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 245)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 246)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 247)",
+    "label": "neutral"
+  },
+  {
+    "text": "Waste of money. (Sample 248)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 249)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 250)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 251)",
+    "label": "neutral"
+  },
+  {
+    "text": "It works. (Sample 252)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 253)",
+    "label": "neutral"
+  },
+  {
+    "text": "Great service. (Sample 254)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 255)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 256)",
+    "label": "neutral"
+  },
+  {
+    "text": "Waste of money. (Sample 257)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 258)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 259)",
+    "label": "negative"
+  },
+  {
+    "text": "Will buy again. (Sample 260)",
+    "label": "positive"
+  },
+  {
+    "text": "Fantastic quality. (Sample 261)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 262)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 263)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 264)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 265)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 266)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 267)",
+    "label": "positive"
+  },
+  {
+    "text": "Not bad, not great. (Sample 268)",
+    "label": "neutral"
+  },
+  {
+    "text": "Poor quality. (Sample 269)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 270)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 271)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 272)",
+    "label": "neutral"
+  },
+  {
+    "text": "Met requirements. (Sample 273)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 274)",
+    "label": "positive"
+  },
+  {
+    "text": "Terrible service. (Sample 275)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 276)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 277)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 278)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 279)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 280)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 281)",
+    "label": "positive"
+  },
+  {
+    "text": "Just as described. (Sample 282)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 283)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 284)",
+    "label": "negative"
+  },
+  {
+    "text": "Terrible service. (Sample 285)",
+    "label": "negative"
+  },
+  {
+    "text": "Nothing special. (Sample 286)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 287)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 288)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 289)",
+    "label": "negative"
+  },
+  {
+    "text": "Arrived damaged. (Sample 290)",
+    "label": "negative"
+  },
+  {
+    "text": "Mixed feelings. (Sample 291)",
+    "label": "neutral"
+  },
+  {
+    "text": "Great service. (Sample 292)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 293)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 294)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 295)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 296)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 297)",
+    "label": "neutral"
+  },
+  {
+    "text": "It works. (Sample 298)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 299)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 300)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 301)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 302)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 303)",
+    "label": "negative"
+  },
+  {
+    "text": "Faulty item. (Sample 304)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 305)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 306)",
+    "label": "negative"
+  },
+  {
+    "text": "Never again. (Sample 307)",
+    "label": "negative"
+  },
+  {
+    "text": "Best purchase ever. (Sample 308)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 309)",
+    "label": "neutral"
+  },
+  {
+    "text": "I love this product! (Sample 310)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 311)",
+    "label": "positive"
+  },
+  {
+    "text": "One star. (Sample 312)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 313)",
+    "label": "neutral"
+  },
+  {
+    "text": "I love this product! (Sample 314)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 315)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 316)",
+    "label": "neutral"
+  },
+  {
+    "text": "One star. (Sample 317)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 318)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 319)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 320)",
+    "label": "positive"
+  },
+  {
+    "text": "Will buy again. (Sample 321)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 322)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 323)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 324)",
+    "label": "negative"
+  },
+  {
+    "text": "Will buy again. (Sample 325)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 326)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 327)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 328)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 329)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 330)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 331)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 332)",
+    "label": "negative"
+  },
+  {
+    "text": "Decent for the price. (Sample 333)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 334)",
+    "label": "negative"
+  },
+  {
+    "text": "Waste of money. (Sample 335)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 336)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 337)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 338)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 339)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 340)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 341)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 342)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 343)",
+    "label": "positive"
+  },
+  {
+    "text": "Average performance. (Sample 344)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 345)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 346)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 347)",
+    "label": "negative"
+  },
+  {
+    "text": "It was okay. (Sample 348)",
+    "label": "neutral"
+  },
+  {
+    "text": "Amazing experience. (Sample 349)",
+    "label": "positive"
+  },
+  {
+    "text": "Customer support was rude. (Sample 350)",
+    "label": "negative"
+  },
+  {
+    "text": "Met requirements. (Sample 351)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very disappointed. (Sample 352)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 353)",
+    "label": "positive"
+  },
+  {
+    "text": "Customer support was rude. (Sample 354)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 355)",
+    "label": "neutral"
+  },
+  {
+    "text": "Faulty item. (Sample 356)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 357)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 358)",
+    "label": "positive"
+  },
+  {
+    "text": "Not bad, not great. (Sample 359)",
+    "label": "neutral"
+  },
+  {
+    "text": "I love this product! (Sample 360)",
+    "label": "positive"
+  },
+  {
+    "text": "Mixed feelings. (Sample 361)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 362)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 363)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 364)",
+    "label": "negative"
+  },
+  {
+    "text": "Not worth it. (Sample 365)",
+    "label": "negative"
+  },
+  {
+    "text": "Met requirements. (Sample 366)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 367)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 368)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 369)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 370)",
+    "label": "positive"
+  },
+  {
+    "text": "It works. (Sample 371)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 372)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 373)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 374)",
+    "label": "negative"
+  },
+  {
+    "text": "Waste of money. (Sample 375)",
+    "label": "negative"
+  },
+  {
+    "text": "It was okay. (Sample 376)",
+    "label": "neutral"
+  },
+  {
+    "text": "Decent for the price. (Sample 377)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 378)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 379)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 380)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 381)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 382)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 383)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 384)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 385)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 386)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 387)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 388)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 389)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 390)",
+    "label": "negative"
+  },
+  {
+    "text": "Met requirements. (Sample 391)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 392)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 393)",
+    "label": "negative"
+  },
+  {
+    "text": "Never again. (Sample 394)",
+    "label": "negative"
+  },
+  {
+    "text": "Very disappointed. (Sample 395)",
+    "label": "negative"
+  },
+  {
+    "text": "Waste of money. (Sample 396)",
+    "label": "negative"
+  },
+  {
+    "text": "Met requirements. (Sample 397)",
+    "label": "neutral"
+  },
+  {
+    "text": "Poor quality. (Sample 398)",
+    "label": "negative"
+  },
+  {
+    "text": "Not bad, not great. (Sample 399)",
+    "label": "neutral"
+  },
+  {
+    "text": "Great service. (Sample 400)",
+    "label": "positive"
+  },
+  {
+    "text": "Will buy again. (Sample 401)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 402)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 403)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 404)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 405)",
+    "label": "positive"
+  },
+  {
+    "text": "Great service. (Sample 406)",
+    "label": "positive"
+  },
+  {
+    "text": "Decent for the price. (Sample 407)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 408)",
+    "label": "neutral"
+  },
+  {
+    "text": "Terrible service. (Sample 409)",
+    "label": "negative"
+  },
+  {
+    "text": "Waste of money. (Sample 410)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 411)",
+    "label": "neutral"
+  },
+  {
+    "text": "Average performance. (Sample 412)",
+    "label": "neutral"
+  },
+  {
+    "text": "Just as described. (Sample 413)",
+    "label": "neutral"
+  },
+  {
+    "text": "Mixed feelings. (Sample 414)",
+    "label": "neutral"
+  },
+  {
+    "text": "Five stars! (Sample 415)",
+    "label": "positive"
+  },
+  {
+    "text": "Customer support was rude. (Sample 416)",
+    "label": "negative"
+  },
+  {
+    "text": "Just as described. (Sample 417)",
+    "label": "neutral"
+  },
+  {
+    "text": "Average performance. (Sample 418)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 419)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 420)",
+    "label": "neutral"
+  },
+  {
+    "text": "Arrived damaged. (Sample 421)",
+    "label": "negative"
+  },
+  {
+    "text": "Standard delivery. (Sample 422)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 423)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 424)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 425)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 426)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 427)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 428)",
+    "label": "negative"
+  },
+  {
+    "text": "Not bad, not great. (Sample 429)",
+    "label": "neutral"
+  },
+  {
+    "text": "Fantastic quality. (Sample 430)",
+    "label": "positive"
+  },
+  {
+    "text": "Standard delivery. (Sample 431)",
+    "label": "neutral"
+  },
+  {
+    "text": "Waste of money. (Sample 432)",
+    "label": "negative"
+  },
+  {
+    "text": "I love this product! (Sample 433)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 434)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 435)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 436)",
+    "label": "neutral"
+  },
+  {
+    "text": "It was okay. (Sample 437)",
+    "label": "neutral"
+  },
+  {
+    "text": "Standard delivery. (Sample 438)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 439)",
+    "label": "positive"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 440)",
+    "label": "positive"
+  },
+  {
+    "text": "Fantastic quality. (Sample 441)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 442)",
+    "label": "negative"
+  },
+  {
+    "text": "It works. (Sample 443)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 444)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 445)",
+    "label": "positive"
+  },
+  {
+    "text": "Very satisfied. (Sample 446)",
+    "label": "positive"
+  },
+  {
+    "text": "Customer support was rude. (Sample 447)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 448)",
+    "label": "positive"
+  },
+  {
+    "text": "Will buy again. (Sample 449)",
+    "label": "positive"
+  },
+  {
+    "text": "Very disappointed. (Sample 450)",
+    "label": "negative"
+  },
+  {
+    "text": "Five stars! (Sample 451)",
+    "label": "positive"
+  },
+  {
+    "text": "Average performance. (Sample 452)",
+    "label": "neutral"
+  },
+  {
+    "text": "Nothing special. (Sample 453)",
+    "label": "neutral"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 454)",
+    "label": "positive"
+  },
+  {
+    "text": "Nothing special. (Sample 455)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 456)",
+    "label": "negative"
+  },
+  {
+    "text": "Standard delivery. (Sample 457)",
+    "label": "neutral"
+  },
+  {
+    "text": "Never again. (Sample 458)",
+    "label": "negative"
+  },
+  {
+    "text": "Average performance. (Sample 459)",
+    "label": "neutral"
+  },
+  {
+    "text": "Very satisfied. (Sample 460)",
+    "label": "positive"
+  },
+  {
+    "text": "Met requirements. (Sample 461)",
+    "label": "neutral"
+  },
+  {
+    "text": "Best purchase ever. (Sample 462)",
+    "label": "positive"
+  },
+  {
+    "text": "I love this product! (Sample 463)",
+    "label": "positive"
+  },
+  {
+    "text": "It was okay. (Sample 464)",
+    "label": "neutral"
+  },
+  {
+    "text": "Highly recommended. (Sample 465)",
+    "label": "positive"
+  },
+  {
+    "text": "Never again. (Sample 466)",
+    "label": "negative"
+  },
+  {
+    "text": "Very satisfied. (Sample 467)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 468)",
+    "label": "negative"
+  },
+  {
+    "text": "Customer support was rude. (Sample 469)",
+    "label": "negative"
+  },
+  {
+    "text": "Exceeded expectations. (Sample 470)",
+    "label": "positive"
+  },
+  {
+    "text": "Five stars! (Sample 471)",
+    "label": "positive"
+  },
+  {
+    "text": "Not worth it. (Sample 472)",
+    "label": "negative"
+  },
+  {
+    "text": "Very disappointed. (Sample 473)",
+    "label": "negative"
+  },
+  {
+    "text": "Not bad, not great. (Sample 474)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not bad, not great. (Sample 475)",
+    "label": "neutral"
+  },
+  {
+    "text": "Not worth it. (Sample 476)",
+    "label": "negative"
+  },
+  {
+    "text": "Decent for the price. (Sample 477)",
+    "label": "neutral"
+  },
+  {
+    "text": "Will buy again. (Sample 478)",
+    "label": "positive"
+  },
+  {
+    "text": "Waste of money. (Sample 479)",
+    "label": "negative"
+  },
+  {
+    "text": "Great service. (Sample 480)",
+    "label": "positive"
+  },
+  {
+    "text": "Fantastic quality. (Sample 481)",
+    "label": "positive"
+  },
+  {
+    "text": "Terrible service. (Sample 482)",
+    "label": "negative"
+  },
+  {
+    "text": "Nothing special. (Sample 483)",
+    "label": "neutral"
+  },
+  {
+    "text": "Great service. (Sample 484)",
+    "label": "positive"
+  },
+  {
+    "text": "Poor quality. (Sample 485)",
+    "label": "negative"
+  },
+  {
+    "text": "Will buy again. (Sample 486)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 487)",
+    "label": "negative"
+  },
+  {
+    "text": "Poor quality. (Sample 488)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 489)",
+    "label": "positive"
+  },
+  {
+    "text": "Fantastic quality. (Sample 490)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 491)",
+    "label": "negative"
+  },
+  {
+    "text": "Amazing experience. (Sample 492)",
+    "label": "positive"
+  },
+  {
+    "text": "Mixed feelings. (Sample 493)",
+    "label": "neutral"
+  },
+  {
+    "text": "It works. (Sample 494)",
+    "label": "neutral"
+  },
+  {
+    "text": "One star. (Sample 495)",
+    "label": "negative"
+  },
+  {
+    "text": "Highly recommended. (Sample 496)",
+    "label": "positive"
+  },
+  {
+    "text": "Best purchase ever. (Sample 497)",
+    "label": "positive"
+  },
+  {
+    "text": "Fantastic quality. (Sample 498)",
+    "label": "positive"
+  },
+  {
+    "text": "Arrived damaged. (Sample 499)",
+    "label": "negative"
+  }
+]
