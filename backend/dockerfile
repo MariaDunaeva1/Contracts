@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apk add --no-cache git
+
+COPY go.mod ./
+# Descargar dependencias explícitamente y verificar
+RUN go mod tidy && go mod download && ls -la
+
+COPY . .
+# Forzar tidy de nuevo después de copiar el código por si acaso
+RUN go mod tidy
+
+# Compilar a una ruta fuera de /app para evitar que el volumen montado (./backend:/app) oculte el binario
+RUN go build -o /usr/local/bin/server cmd/server/main.go
+
+CMD ["/usr/local/bin/server"]
