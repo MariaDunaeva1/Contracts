@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Dataset - Finetune Studio</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">🚀 Finetune Studio</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link active">Upload Dataset</a></li>
+                <li><a href="training-new.html" class="nav-link">New Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="mb-3">📤 Upload Dataset</h1>
+
+        <!-- Upload Form -->
+        <div class="card mb-4">
+            <div class="card-header">Dataset Information</div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Dataset Name *</label>
+                    <input type="text" id="datasetName" class="form-control" 
+                           placeholder="e.g., Sentiment Analysis Dataset" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="datasetDescription" class="form-control" 
+                              placeholder="Brief description of your dataset..."></textarea>
+                </div>
+
+                <!-- Drag & Drop Area -->
+                <div class="form-group">
+                    <label class="form-label">Dataset File (JSON/JSONL) *</label>
+                    <div id="dropzone" class="dropzone">
+                        <div class="dropzone-icon">📁</div>
+                        <p><strong>Drag & drop your file here</strong></p>
+                        <p class="text-muted">or click to browse</p>
+                        <p class="text-muted mt-2">Supported: JSON, JSONL (max 500MB)</p>
+                        <input type="file" id="fileInput" accept=".json,.jsonl" 
+                               style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Selected File Info -->
+                <div id="fileInfo" class="hidden mt-3 p-3 bg-light rounded">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <strong id="fileName"></strong>
+                            <p class="text-muted" id="fileSize"></p>
+                        </div>
+                        <button onclick="clearFile()" class="btn btn-sm btn-danger">Remove</button>
+                    </div>
+                </div>
+
+                <!-- Upload Progress -->
+                <div id="uploadProgress" class="hidden mt-3">
+                    <label class="form-label">Upload Progress</label>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-3 flex gap-2">
+                    <button id="uploadBtn" onclick="uploadDataset()" 
+                            class="btn btn-primary" disabled>
+                        Upload Dataset
+                    </button>
+                    <a href="index.html" class="btn btn-outline">Cancel</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Results -->
+        <div id="validationCard" class="card hidden">
+            <div class="card-header">✅ Validation Results</div>
+            <div class="card-body">
+                <div class="grid grid-3 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalSamples">-</div>
+                        <div class="stat-label">Total Samples</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgLength">-</div>
+                        <div class="stat-label">Avg Length</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="datasetFormat">-</div>
+                        <div class="stat-label">Format</div>
+                    </div>
+                </div>
+
+                <!-- Dataset Preview -->
+                <div class="mt-3">
+                    <h4>Dataset Preview (First 10 samples)</h4>
+                    <div id="previewContainer" class="mt-2" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Content</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Stats Chart -->
+                <div class="mt-4" id="statsChartContainer" style="display: none;">
+                    <h4>Label Distribution</h4>
+                    <canvas id="statsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        let selectedFile = null;
+        let validationData = null;
+
+        // Setup drag & drop
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('active');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('active');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('active');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        async function handleFileSelect(file) {
+            // Validate file
+            const validation = validateDatasetFile(file);
+            if (!validation.valid) {
+                showToast(validation.error, 'error');
+                return;
+            }
+
+            selectedFile = file;
+
+            // Show file info
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatBytes(file.size);
+            document.getElementById('fileInfo').classList.remove('hidden');
+            document.getElementById('uploadBtn').disabled = false;
+
+            // Parse and validate dataset
+            try {
+                showToast('Validating dataset...', 'info');
+                validationData = await parseDatasetPreview(file, 10);
+                displayValidation(validationData);
+            } catch (error) {
+                showToast('Failed to parse dataset: ' + error.message, 'error');
+                clearFile();
+            }
+        }
+
+        function displayValidation(data) {
+            document.getElementById('validationCard').classList.remove('hidden');
+            
+            // Update stats
+            document.getElementById('totalSamples').textContent = data.total;
+            document.getElementById('datasetFormat').textContent = data.format.toUpperCase();
+            
+            // Calculate average length
+            const avgLen = data.preview.reduce((acc, item) => {
+                const text = JSON.stringify(item);
+                return acc + text.length;
+            }, 0) / data.preview.length;
+            document.getElementById('avgLength').textContent = Math.round(avgLen) + ' chars';
+
+            // Display preview
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = data.preview.map((item, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td><pre style="margin: 0; white-space: pre-wrap;">${escapeHtml(JSON.stringify(item, null, 2))}</pre></td>
+                </tr>
+            `).join('');
+
+            // Try to create label distribution chart
+            try {
+                const labels = {};
+                data.preview.forEach(item => {
+                    const label = item.label || item.category || 'unknown';
+                    labels[label] = (labels[label] || 0) + 1;
+                });
+
+                if (Object.keys(labels).length > 1) {
+                    document.getElementById('statsChartContainer').style.display = 'block';
+                    createDatasetStatsChart('statsChart', labels);
+                }
+            } catch (e) {
+                console.log('Could not create stats chart:', e);
+            }
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            validationData = null;
+            fileInput.value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('validationCard').classList.add('hidden');
+            document.getElementById('uploadBtn').disabled = true;
+        }
+
+        async function uploadDataset() {
+            if (!selectedFile) {
+                showToast('Please select a file', 'error');
+                return;
+            }
+
+            const name = document.getElementById('datasetName').value.trim();
+            if (!name) {
+                showToast('Please enter a dataset name', 'error');
+                return;
+            }
+
+            const description = document.getElementById('datasetDescription').value.trim();
+
+            // Show progress
+            document.getElementById('uploadProgress').classList.remove('hidden');
+            document.getElementById('uploadBtn').disabled = true;
+
+            try {
+                // Simulate progress (real progress tracking would need XMLHttpRequest)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 10;
+                    if (progress <= 90) {
+                        updateProgress(progress);
+                    }
+                }, 200);
+
+                // Upload
+                const result = await api.uploadDataset(selectedFile, name, description);
+                
+                clearInterval(progressInterval);
+                updateProgress(100);
+
+                showToast('Dataset uploaded successfully!', 'success');
+                
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+
+            } catch (error) {
+                showToast('Upload failed: ' + error.message, 'error');
+                document.getElementById('uploadBtn').disabled = false;
+                document.getElementById('uploadProgress').classList.add('hidden');
+            }
+        }
+
+        function updateProgress(percent) {
+            const bar = document.getElementById('progressBar');
+            bar.style.width = percent + '%';
+            bar.textContent = percent + '%';
+        }
+    </script>
+</body>
+</html>

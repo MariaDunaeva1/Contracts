@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation Results - Finetune Studio</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">🚀 Finetune Studio</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
+                <li><a href="training-new.html" class="nav-link">New Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-3">
+            <h1>🎯 Evaluation Results</h1>
+            <div id="statusBadge"></div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="card text-center p-4">
+            <div class="spinner"></div>
+            <p class="mt-2 text-muted">Loading evaluation results...</p>
+        </div>
+
+        <!-- Pending/Running State -->
+        <div id="pendingState" class="card hidden text-center p-4">
+            <div class="spinner pulse"></div>
+            <h3 class="mt-3">Evaluation in Progress</h3>
+            <p class="text-muted">This may take a few minutes. The page will auto-refresh.</p>
+        </div>
+
+        <!-- Results -->
+        <div id="resultsContainer" class="hidden">
+            <!-- Summary Stats -->
+            <div class="grid grid-4 mb-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="testSamples">-</div>
+                    <div class="stat-label">Test Samples</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="baseModelName">-</div>
+                    <div class="stat-label">Base Model</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="fineTunedName">-</div>
+                    <div class="stat-label">Fine-tuned Model</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value text-success" id="improvement">-</div>
+                    <div class="stat-label">Accuracy Improvement</div>
+                </div>
+            </div>
+
+            <!-- Comparison Chart -->
+            <div class="card mb-3">
+                <div class="card-header">📊 Performance Comparison</div>
+                <div class="card-body">
+                    <canvas id="comparisonChart" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Metrics Comparison -->
+            <div class="grid grid-2 gap-3 mb-3">
+                <div class="card">
+                    <div class="card-header">Base Model Metrics</div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <span>Accuracy:</span>
+                            <strong id="baseAccuracy">-</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>F1 Score:</span>
+                            <strong id="baseF1">-</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Precision:</span>
+                            <strong id="basePrecision">-</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Recall:</span>
+                            <strong id="baseRecall">-</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Avg Response Time:</span>
+                            <strong id="baseTime">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 2px solid var(--success);">
+                    <div class="card-header">Fine-tuned Model Metrics</div>
+                    <div class="card-body">
+                        <div class="metric-row">
+                            <span>Accuracy:</span>
+                            <strong class="text-success" id="ftAccuracy">-</strong>
+                            <span class="text-success" id="ftAccuracyDelta"></span>
+                        </div>
+                        <div class="metric-row">
+                            <span>F1 Score:</span>
+                            <strong class="text-success" id="ftF1">-</strong>
+                            <span class="text-success" id="ftF1Delta"></span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Precision:</span>
+                            <strong class="text-success" id="ftPrecision">-</strong>
+                            <span class="text-success" id="ftPrecisionDelta"></span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Recall:</span>
+                            <strong class="text-success" id="ftRecall">-</strong>
+                            <span class="text-success" id="ftRecallDelta"></span>
+                        </div>
+                        <div class="metric-row">
+                            <span>Avg Response Time:</span>
+                            <strong id="ftTime">-</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Examples Table -->
+            <div class="card">
+                <div class="card-header">📝 Example Predictions</div>
+                <div class="card-body">
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Input</th>
+                                    <th>Expected</th>
+                                    <th>Base Model</th>
+                                    <th>Fine-tuned</th>
+                                    <th>Winner</th>
+                                </tr>
+                            </thead>
+                            <tbody id="examplesTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card mt-3">
+                <div class="card-body flex gap-2">
+                    <button onclick="downloadReport()" class="btn btn-primary">
+                        📥 Download Report (JSON)
+                    </button>
+                    <button onclick="refreshEvaluation()" class="btn btn-outline">
+                        🔄 Refresh
+                    </button>
+                    <a href="index.html" class="btn btn-outline">
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        let evaluationId = null;
+        let evaluation = null;
+        let comparisonChart = null;
+
+        // Get evaluation ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        evaluationId = urlParams.get('id');
+
+        if (!evaluationId) {
+            showToast('No evaluation ID provided', 'error');
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        }
+
+        // Load evaluation on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEvaluation();
+            
+            // Auto-refresh every 10 seconds if pending/running
+            setInterval(() => {
+                if (evaluation && (evaluation.status === 'pending' || evaluation.status === 'running')) {
+                    loadEvaluation();
+                }
+            }, 10000);
+        });
+
+        async function loadEvaluation() {
+            try {
+                evaluation = await api.getEvaluation(evaluationId);
+                updateEvaluationUI(evaluation);
+            } catch (error) {
+                console.error('Failed to load evaluation:', error);
+                showToast('Failed to load evaluation data', 'error');
+            }
+        }
+
+        function updateEvaluationUI(eval) {
+            document.getElementById('statusBadge').innerHTML = getStatusBadge(eval.status);
+
+            // Hide loading
+            document.getElementById('loadingState').classList.add('hidden');
+
+            if (eval.status === 'pending' || eval.status === 'running') {
+                document.getElementById('pendingState').classList.remove('hidden');
+                document.getElementById('resultsContainer').classList.add('hidden');
+                return;
+            }
+
+            if (eval.status === 'failed') {
+                document.getElementById('pendingState').classList.add('hidden');
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="card text-center p-4">
+                        <h3 class="text-danger">Evaluation Failed</h3>
+                        <p class="text-muted">${escapeHtml(eval.error_message || 'Unknown error')}</p>
+                    </div>
+                `;
+                document.getElementById('resultsContainer').classList.remove('hidden');
+                return;
+            }
+
+            // Show results
+            document.getElementById('pendingState').classList.add('hidden');
+            document.getElementById('resultsContainer').classList.remove('hidden');
+
+            const results = eval.results || {};
+            const baseModel = results.base_model || {};
+            const fineTuned = results.fine_tuned || {};
+            const improvement = results.improvement || {};
+            const examples = eval.examples || [];
+
+            // Summary stats
+            document.getElementById('testSamples').textContent = examples.length || '-';
+            document.getElementById('baseModelName').textContent = eval.base_model_name || '-';
+            document.getElementById('fineTunedName').textContent = eval.fine_tuned_name || '-';
+            document.getElementById('improvement').textContent = improvement.accuracy_delta || '-';
+
+            // Base model metrics
+            document.getElementById('baseAccuracy').textContent = 
+                ((baseModel.accuracy || 0) * 100).toFixed(1) + '%';
+            document.getElementById('baseF1').textContent = 
+                (baseModel.f1_score || 0).toFixed(3);
+            document.getElementById('basePrecision').textContent = 
+                (baseModel.precision || 0).toFixed(3);
+            document.getElementById('baseRecall').textContent = 
+                (baseModel.recall || 0).toFixed(3);
+            document.getElementById('baseTime').textContent = 
+                (baseModel.avg_response_time_ms || 0).toFixed(0) + 'ms';
+
+            // Fine-tuned model metrics
+            document.getElementById('ftAccuracy').textContent = 
+                ((fineTuned.accuracy || 0) * 100).toFixed(1) + '%';
+            document.getElementById('ftAccuracyDelta').textContent = improvement.accuracy_delta || '';
+            document.getElementById('ftF1').textContent = 
+                (fineTuned.f1_score || 0).toFixed(3);
+            document.getElementById('ftF1Delta').textContent = improvement.f1_score_delta || '';
+            document.getElementById('ftPrecision').textContent = 
+                (fineTuned.precision || 0).toFixed(3);
+            document.getElementById('ftPrecisionDelta').textContent = improvement.precision_delta || '';
+            document.getElementById('ftRecall').textContent = 
+                (fineTuned.recall || 0).toFixed(3);
+            document.getElementById('ftRecallDelta').textContent = improvement.recall_delta || '';
+            document.getElementById('ftTime').textContent = 
+                (fineTuned.avg_response_time_ms || 0).toFixed(0) + 'ms';
+
+            // Create comparison chart
+            if (!comparisonChart) {
+                comparisonChart = createComparisonChart('comparisonChart', baseModel, fineTuned);
+            }
+
+            // Display examples
+            displayExamples(examples);
+        }
+
+        function displayExamples(examples) {
+            const tbody = document.getElementById('examplesTableBody');
+            
+            if (!examples || examples.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No examples available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = examples.map(ex => {
+                const winnerClass = ex.winner === 'fine_tuned' ? 'success' : 
+                                   ex.winner === 'base' ? 'warning' : 'secondary';
+                
+                return `
+                    <tr>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                            ${escapeHtml(ex.input || '')}
+                        </td>
+                        <td><span class="badge badge-info">${escapeHtml(ex.expected || '')}</span></td>
+                        <td>
+                            <span class="badge badge-${ex.base_model_correct ? 'success' : 'danger'}">
+                                ${escapeHtml(ex.base_model_output || '')} 
+                                ${ex.base_model_correct ? '✅' : '❌'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-${ex.fine_tuned_correct ? 'success' : 'danger'}">
+                                ${escapeHtml(ex.fine_tuned_output || '')} 
+                                ${ex.fine_tuned_correct ? '✅' : '❌'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge badge-${winnerClass}">
+                                ${ex.winner || 'tie'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function downloadReport() {
+            if (!evaluation) return;
+            
+            const filename = `evaluation-${evaluationId}-${new Date().toISOString().split('T')[0]}.json`;
+            downloadJSON(evaluation, filename);
+            showToast('Report downloaded!', 'success');
+        }
+
+        function refreshEvaluation() {
+            showToast('Refreshing...', 'info');
+            loadEvaluation();
+        }
+    </script>
+
+    <style>
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</body>
+</html>

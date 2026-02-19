@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 4px;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .info { color: #dcdcaa; }
+        button {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0052a3;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Backend Connection Test</h1>
+    
+    <div>
+        <button onclick="testHealth()">Test Health</button>
+        <button onclick="testJobs()">Test Jobs</button>
+        <button onclick="testDatasets()">Test Datasets</button>
+        <button onclick="testModels()">Test Models</button>
+        <button onclick="clearResults()">Clear</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testHealth() {
+            log('Testing health endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                log(`✓ Health check successful`, 'success');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log(`✗ Health check failed: ${error.message}`, 'error');
+                log(`Error details: ${error.stack}`, 'error');
+            }
+        }
+
+        async function testJobs() {
+            log('Testing jobs endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/jobs?page=1&limit=5`);
+                const data = await response.json();
+                log(`✓ Jobs endpoint successful`, 'success');
+                log(`Found ${data.total} jobs`, 'info');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log(`✗ Jobs endpoint failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDatasets() {
+            log('Testing datasets endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/datasets?page=1&limit=5`);
+                const data = await response.json();
+                log(`✓ Datasets endpoint successful`, 'success');
+                log(`Found ${data.total} datasets`, 'info');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log(`✗ Datasets endpoint failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testModels() {
+            log('Testing models endpoint...', 'info');
+            try {
+                const response = await fetch(`${API_BASE}/models?page=1&limit=5`);
+                const data = await response.json();
+                log(`✓ Models endpoint successful`, 'success');
+                log(`Found ${data.total} models`, 'info');
+                log(`<pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+            } catch (error) {
+                log(`✗ Models endpoint failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded. Click buttons to test endpoints.', 'info');
+            log(`API Base URL: ${API_BASE}`, 'info');
+        });
+    </script>
+</body>
+</html>

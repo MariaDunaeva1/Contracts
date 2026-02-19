@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finetune Studio - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">🚀 Finetune Studio</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link active">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
+                <li><a href="training-new.html" class="nav-link">New Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Quick Stats -->
+        <div class="grid grid-4 mb-4">
+            <div class="stat-card fade-in">
+                <div class="stat-value" id="totalModels">-</div>
+                <div class="stat-label">Models Trained</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value" id="totalDatasets">-</div>
+                <div class="stat-label">Datasets Uploaded</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value" id="totalTrainingTime">-</div>
+                <div class="stat-label">Total Training Time</div>
+            </div>
+            <div class="stat-card fade-in">
+                <div class="stat-value" id="successRate">-</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">Quick Actions</div>
+            <div class="card-body flex gap-2">
+                <a href="dataset-upload.html" class="btn btn-primary">
+                    📤 Upload Dataset
+                </a>
+                <a href="training-new.html" class="btn btn-success">
+                    🎯 Start Training
+                </a>
+                <button onclick="refreshDashboard()" class="btn btn-outline">
+                    🔄 Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Jobs -->
+        <div class="card">
+            <div class="card-header flex justify-between items-center">
+                <span>Recent Training Jobs</span>
+                <select id="statusFilter" class="form-control" style="width: 150px;" onchange="filterJobs()">
+                    <option value="">All Status</option>
+                    <option value="running">Running</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            <div class="card-body">
+                <div id="jobsLoading" class="text-center p-4">
+                    <div class="spinner"></div>
+                    <p class="mt-2 text-muted">Loading jobs...</p>
+                </div>
+                <div id="jobsContainer" class="hidden">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Dataset</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="jobsEmpty" class="hidden text-center p-4 text-muted">
+                    <p>No jobs found. Start by uploading a dataset and creating a training job.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let currentJobs = [];
+        let statusFilter = '';
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            // Auto-refresh every 10 seconds
+            setInterval(loadDashboard, 10000);
+        });
+
+        async function loadDashboard() {
+            try {
+                // Test backend connection first
+                console.log('Testing backend connection...');
+                const health = await api.health();
+                console.log('Backend health:', health);
+
+                // Load stats
+                console.log('Loading stats...');
+                const stats = await api.getStats();
+                console.log('Stats loaded:', stats);
+                updateStats(stats);
+
+                // Load recent jobs
+                console.log('Loading jobs...');
+                const jobsData = await api.listJobs(1, 10, statusFilter);
+                console.log('Jobs loaded:', jobsData);
+                currentJobs = jobsData.data;
+                displayJobs(currentJobs);
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                console.error('Error details:', error.message);
+                
+                // Show more detailed error
+                const errorMsg = error.message || 'Unknown error';
+                showToast(`Failed to load dashboard: ${errorMsg}`, 'error');
+                
+                // Show error in UI
+                document.getElementById('jobsLoading').innerHTML = `
+                    <div class="text-center p-4">
+                        <p class="text-danger">Failed to connect to backend</p>
+                        <p class="text-muted">Error: ${errorMsg}</p>
+                        <p class="text-muted">Make sure backend is running at http://localhost:8080</p>
+                        <button onclick="loadDashboard()" class="btn btn-primary mt-2">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('totalModels').textContent = stats.totalModels || 0;
+            document.getElementById('totalDatasets').textContent = stats.totalDatasets || 0;
+            document.getElementById('totalTrainingTime').textContent = 
+                formatTime(stats.totalTrainingTime) || '0h';
+            document.getElementById('successRate').textContent = 
+                (stats.successRate || 0) + '%';
+        }
+
+        function displayJobs(jobs) {
+            const loading = document.getElementById('jobsLoading');
+            const container = document.getElementById('jobsContainer');
+            const empty = document.getElementById('jobsEmpty');
+            const tbody = document.getElementById('jobsTableBody');
+
+            loading.classList.add('hidden');
+
+            if (!jobs || jobs.length === 0) {
+                container.classList.add('hidden');
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            tbody.innerHTML = jobs.map(job => {
+                const progress = calculateProgress(job);
+                const metrics = parseMetrics(job);
+                
+                return `
+                    <tr>
+                        <td><strong>#${job.ID}</strong></td>
+                        <td>${escapeHtml(job.dataset?.name || 'Unknown')}</td>
+                        <td>${getStatusBadge(job.status)}</td>
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar ${getProgressBarClass(job.status)}" 
+                                     style="width: ${progress}%">
+                                    ${progress}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>${formatRelativeTime(job.created_at)}</td>
+                        <td>
+                            <div class="flex gap-1">
+                                <a href="training-view.html?id=${job.ID}" 
+                                   class="btn btn-sm btn-primary">View</a>
+                                ${job.status === 'running' ? 
+                                    `<button onclick="cancelJob(${job.ID})" 
+                                             class="btn btn-sm btn-danger">Cancel</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getProgressBarClass(status) {
+            if (status === 'completed') return 'progress-bar-success';
+            if (status === 'failed' || status === 'cancelled') return 'progress-bar-danger';
+            if (status === 'running') return '';
+            return 'progress-bar-warning';
+        }
+
+        async function cancelJob(jobId) {
+            if (!confirm('Are you sure you want to cancel this job?')) return;
+
+            try {
+                await api.cancelJob(jobId);
+                showToast('Job cancelled successfully', 'success');
+                loadDashboard();
+            } catch (error) {
+                showToast('Failed to cancel job: ' + error.message, 'error');
+            }
+        }
+
+        function filterJobs() {
+            statusFilter = document.getElementById('statusFilter').value;
+            loadDashboard();
+        }
+
+        function refreshDashboard() {
+            showToast('Refreshing dashboard...', 'info');
+            loadDashboard();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training View - Finetune Studio</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">🚀 Finetune Studio</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
+                <li><a href="training-new.html" class="nav-link">New Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-3">
+            <h1>Training Job #<span id="jobId">-</span></h1>
+            <div id="statusBadge"></div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="flex justify-between mb-2">
+                    <span><strong>Progress</strong></span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress">
+                    <div id="progressBar" class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                <div class="flex justify-between mt-2 text-muted">
+                    <span>Epoch <span id="currentEpoch">0</span> / <span id="totalEpochs">0</span></span>
+                    <span id="etaText">ETA: Calculating...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="grid grid-4 mb-3">
+            <div class="stat-card">
+                <div class="stat-value" id="lossValue">-</div>
+                <div class="stat-label">Training Loss</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="accuracyValue">-</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="timeElapsed">-</div>
+                <div class="stat-label">Time Elapsed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="etaRemaining">-</div>
+                <div class="stat-label">ETA Remaining</div>
+            </div>
+        </div>
+
+        <div class="grid grid-2 gap-3">
+            <!-- Loss Chart -->
+            <div class="card">
+                <div class="card-header">📈 Training Loss</div>
+                <div class="card-body">
+                    <canvas id="lossChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <span>📋 Training Logs</span>
+                    <button onclick="toggleAutoScroll()" id="autoScrollBtn" class="btn btn-sm btn-outline">
+                        Auto-scroll: ON
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="logsContainer" style="height: 300px; overflow-y: auto; background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.875rem;">
+                        <div class="text-muted">Connecting to log stream...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card mt-3">
+            <div class="card-header">Actions</div>
+            <div class="card-body flex gap-2">
+                <button onclick="refreshJob()" class="btn btn-outline">
+                    🔄 Refresh
+                </button>
+                <button onclick="cancelJob()" id="cancelBtn" class="btn btn-danger hidden">
+                    ❌ Cancel Training
+                </button>
+                <button onclick="downloadModel()" id="downloadBtn" class="btn btn-success hidden">
+                    📥 Download Model
+                </button>
+                <button onclick="evaluateModel()" id="evaluateBtn" class="btn btn-primary hidden">
+                    🎯 Evaluate Model
+                </button>
+                <a href="index.html" class="btn btn-outline">
+                    ← Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/charts.js"></script>
+    <script>
+        let jobId = null;
+        let job = null;
+        let eventSource = null;
+        let autoScroll = true;
+        let lossChart = null;
+        let lossData = { epochs: [], loss: [] };
+
+        // Get job ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        jobId = urlParams.get('id');
+
+        if (!jobId) {
+            showToast('No job ID provided', 'error');
+            setTimeout(() => window.location.href = 'index.html', 2000);
+        }
+
+        // Load job on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('jobId').textContent = jobId;
+            loadJob();
+            connectLogs();
+            
+            // Auto-refresh every 5 seconds
+            setInterval(loadJob, 5000);
+        });
+
+        async function loadJob() {
+            try {
+                job = await api.getJob(jobId);
+                updateJobUI(job);
+            } catch (error) {
+                console.error('Failed to load job:', error);
+                showToast('Failed to load job data', 'error');
+            }
+        }
+
+        function updateJobUI(job) {
+            // Status badge
+            document.getElementById('statusBadge').innerHTML = getStatusBadge(job.status);
+
+            // Progress
+            const progress = calculateProgress(job);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressBar').textContent = progress + '%';
+            document.getElementById('progressText').textContent = progress + '%';
+
+            // Metrics
+            const metrics = parseMetrics(job);
+            const config = parseConfiguration(job);
+
+            document.getElementById('currentEpoch').textContent = metrics.epoch || 0;
+            document.getElementById('totalEpochs').textContent = config.epochs || metrics.total_epochs || 0;
+
+            if (metrics.loss !== undefined) {
+                document.getElementById('lossValue').textContent = metrics.loss.toFixed(4);
+                
+                // Update chart
+                if (!lossData.epochs.includes(metrics.epoch)) {
+                    lossData.epochs.push(metrics.epoch);
+                    lossData.loss.push(metrics.loss);
+                    updateLossChart();
+                }
+            }
+
+            if (metrics.accuracy !== undefined) {
+                document.getElementById('accuracyValue').textContent = 
+                    (metrics.accuracy * 100).toFixed(1) + '%';
+            }
+
+            if (metrics.time_elapsed) {
+                document.getElementById('timeElapsed').textContent = metrics.time_elapsed;
+            }
+
+            if (metrics.eta) {
+                document.getElementById('etaRemaining').textContent = metrics.eta;
+                document.getElementById('etaText').textContent = 'ETA: ' + metrics.eta;
+            }
+
+            // Action buttons
+            document.getElementById('cancelBtn').classList.toggle('hidden', 
+                job.status !== 'running' && job.status !== 'pending');
+            document.getElementById('downloadBtn').classList.toggle('hidden', 
+                job.status !== 'completed');
+            document.getElementById('evaluateBtn').classList.toggle('hidden', 
+                job.status !== 'completed');
+        }
+
+        function updateLossChart() {
+            if (!lossChart) {
+                lossChart = createLossChart('lossChart', lossData);
+            } else {
+                lossChart.data.labels = lossData.epochs;
+                lossChart.data.datasets[0].data = lossData.loss;
+                lossChart.update();
+            }
+        }
+
+        function connectLogs() {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = '<div class="text-muted">Connecting to log stream...</div>';
+
+            try {
+                eventSource = api.streamLogs(
+                    jobId,
+                    (data) => {
+                        appendLogs(data);
+                    },
+                    (error) => {
+                        console.error('Log stream error:', error);
+                        container.innerHTML += '\n<div class="text-danger">Log stream disconnected</div>';
+                    }
+                );
+            } catch (error) {
+                console.error('Failed to connect to logs:', error);
+                container.innerHTML = '<div class="text-danger">Failed to connect to log stream</div>';
+            }
+        }
+
+        function appendLogs(data) {
+            const container = document.getElementById('logsContainer');
+            
+            // Remove "connecting" message
+            if (container.querySelector('.text-muted')) {
+                container.innerHTML = '';
+            }
+
+            // Parse and display logs
+            const lines = data.split('\n').filter(line => line.trim());
+            
+            lines.forEach(line => {
+                const logEntry = document.createElement('div');
+                logEntry.style.padding = '2px 0';
+                logEntry.style.borderBottom = '1px solid #2d2d2d';
+                
+                // Parse log format: [HH:MM:SS] [LEVEL] Message
+                const match = line.match(/\[(\d{2}:\d{2}:\d{2})\]\s*\[(\w+)\]\s*(.*)/);
+                
+                if (match) {
+                    const [, timestamp, level, message] = match;
+                    const color = level === 'ERROR' ? '#f48771' : 
+                                 level === 'WARN' ? '#dcdcaa' : '#4ec9b0';
+                    
+                    logEntry.innerHTML = `
+                        <span style="color: #858585;">[${timestamp}]</span>
+                        <span style="color: ${color}; font-weight: bold; margin: 0 8px;">${level}</span>
+                        <span>${escapeHtml(message)}</span>
+                    `;
+                } else {
+                    logEntry.textContent = line;
+                }
+                
+                container.appendChild(logEntry);
+            });
+
+            // Auto-scroll to bottom
+            if (autoScroll) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const btn = document.getElementById('autoScrollBtn');
+            btn.textContent = 'Auto-scroll: ' + (autoScroll ? 'ON' : 'OFF');
+        }
+
+        async function cancelJob() {
+            if (!confirm('Are you sure you want to cancel this training job?')) return;
+
+            try {
+                await api.cancelJob(jobId);
+                showToast('Job cancelled successfully', 'success');
+                loadJob();
+            } catch (error) {
+                showToast('Failed to cancel job: ' + error.message, 'error');
+            }
+        }
+
+        async function downloadModel() {
+            try {
+                // Get model for this job
+                const models = await api.listModels(1, 100, { job_id: jobId });
+                if (models.data.length === 0) {
+                    showToast('No model found for this job', 'error');
+                    return;
+                }
+
+                const model = models.data[0];
+                showToast('Starting download...', 'info');
+                api.downloadModel(model.ID);
+            } catch (error) {
+                showToast('Failed to download model: ' + error.message, 'error');
+            }
+        }
+
+        async function evaluateModel() {
+            try {
+                // Get model for this job
+                const models = await api.listModels(1, 100, { job_id: jobId });
+                if (models.data.length === 0) {
+                    showToast('No model found for this job', 'error');
+                    return;
+                }
+
+                const model = models.data[0];
+                
+                // Create evaluation
+                const result = await api.createEvaluation(
+                    model.ID,
+                    'datasets/test_split.json',
+                    'llama3.2:3b'
+                );
+
+                showToast('Evaluation started!', 'success');
+                
+                // Redirect to evaluation view
+                setTimeout(() => {
+                    window.location.href = 'evaluation-view.html?id=' + result.evaluation_id;
+                }, 1500);
+
+            } catch (error) {
+                showToast('Failed to start evaluation: ' + error.message, 'error');
+            }
+        }
+
+        function refreshJob() {
+            showToast('Refreshing...', 'info');
+            loadJob();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>

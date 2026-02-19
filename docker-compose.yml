@@ -24,13 +24,16 @@ services:
     volumes:
       - minio_data:/data
 
-  api:
+  backend:
     build: ./backend
     ports:
       - "8080:8080"
     environment:
       - DATABASE_URL=postgres://finetune:finetune_pass@postgres:5432/finetune_db
       - MINIO_ENDPOINT=minio:9000
+      - MINIO_USER=minioadmin
+      - MINIO_PASSWORD=minioadmin
+      - MINIO_USE_SSL=false
       - KAGGLE_USERNAME=${KAGGLE_USERNAME}
       - KAGGLE_KEY=${KAGGLE_KEY}
     depends_on:
@@ -38,6 +41,15 @@ services:
       - minio
     volumes:
       - ./backend:/app
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    environment:
+      - API_URL=http://backend:8080
 
 volumes:
   postgres_data:

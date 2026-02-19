@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Training - Finetune Studio</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            border-bottom: 3px solid #ddd;
+            color: #999;
+            font-weight: 600;
+        }
+        .step.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+        .step.completed {
+            border-bottom-color: var(--success);
+            color: var(--success);
+        }
+        .step-content {
+            display: none;
+        }
+        .step-content.active {
+            display: block;
+        }
+        .model-card {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .model-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+        .model-card.selected {
+            border-color: var(--primary);
+            background: rgba(0, 102, 204, 0.05);
+        }
+        .slider-container {
+            margin: 1rem 0;
+        }
+        .slider {
+            width: 100%;
+        }
+        .slider-value {
+            display: inline-block;
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">🚀 Finetune Studio</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
+                <li><a href="training-new.html" class="nav-link active">New Training</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1 class="mb-3">🎯 Start New Training</h1>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" id="step1Indicator">
+                <div>1</div>
+                <div>Select Dataset</div>
+            </div>
+            <div class="step" id="step2Indicator">
+                <div>2</div>
+                <div>Select Model</div>
+            </div>
+            <div class="step" id="step3Indicator">
+                <div>3</div>
+                <div>Configure</div>
+            </div>
+        </div>
+
+        <!-- Step 1: Select Dataset -->
+        <div id="step1" class="step-content active">
+            <div class="card">
+                <div class="card-header">Step 1: Select Dataset</div>
+                <div class="card-body">
+                    <div id="datasetsLoading" class="text-center p-4">
+                        <div class="spinner"></div>
+                        <p class="mt-2 text-muted">Loading datasets...</p>
+                    </div>
+                    
+                    <div id="datasetsContainer" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Choose a dataset:</label>
+                            <select id="datasetSelect" class="form-control">
+                                <option value="">-- Select Dataset --</option>
+                            </select>
+                        </div>
+                        
+                        <div id="datasetInfo" class="hidden mt-3 p-3 bg-light rounded">
+                            <h4>Dataset Information</h4>
+                            <p><strong>Name:</strong> <span id="datasetName"></span></p>
+                            <p><strong>Description:</strong> <span id="datasetDescription"></span></p>
+                            <p><strong>Size:</strong> <span id="datasetSize"></span></p>
+                            <p><strong>Samples:</strong> <span id="datasetSamples"></span></p>
+                        </div>
+                    </div>
+
+                    <div id="datasetsEmpty" class="hidden text-center p-4">
+                        <p class="text-muted">No datasets found.</p>
+                        <a href="dataset-upload.html" class="btn btn-primary mt-2">Upload Dataset</a>
+                    </div>
+                </div>
+                <div class="card-footer flex justify-between">
+                    <a href="index.html" class="btn btn-outline">Cancel</a>
+                    <button onclick="nextStep()" id="step1Next" class="btn btn-primary" disabled>
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Select Base Model -->
+        <div id="step2" class="step-content">
+            <div class="card">
+                <div class="card-header">Step 2: Select Base Model</div>
+                <div class="card-body">
+                    <div class="grid grid-3 gap-3">
+                        <div class="model-card" onclick="selectModel('llama-3.2-1b')">
+                            <h3>🦙 Llama 3.2 1B</h3>
+                            <p class="text-muted">Lightweight, fast training</p>
+                            <p><strong>VRAM:</strong> ~4GB</p>
+                            <p><strong>Speed:</strong> Fast</p>
+                        </div>
+                        <div class="model-card" onclick="selectModel('llama-3.2-3b')">
+                            <h3>🦙 Llama 3.2 3B</h3>
+                            <p class="text-muted">Balanced performance</p>
+                            <p><strong>VRAM:</strong> ~8GB</p>
+                            <p><strong>Speed:</strong> Medium</p>
+                        </div>
+                        <div class="model-card" onclick="selectModel('llama-3.1-8b')">
+                            <h3>🦙 Llama 3.1 8B</h3>
+                            <p class="text-muted">High quality results</p>
+                            <p><strong>VRAM:</strong> ~16GB</p>
+                            <p><strong>Speed:</strong> Slow</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer flex justify-between">
+                    <button onclick="prevStep()" class="btn btn-outline">← Back</button>
+                    <button onclick="nextStep()" id="step2Next" class="btn btn-primary" disabled>
+                        Next →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Configure Training -->
+        <div id="step3" class="step-content">
+            <div class="card">
+                <div class="card-header">Step 3: Configure Training</div>
+                <div class="card-body">
+                    <!-- LoRA Rank -->
+                    <div class="slider-container">
+                        <label class="form-label">
+                            LoRA Rank: <span class="slider-value" id="rankValue">16</span>
+                        </label>
+                        <input type="range" id="loraRank" class="slider" 
+                               min="8" max="32" step="8" value="16" 
+                               oninput="updateSlider('rank', this.value)">
+                        <p class="text-muted">Higher rank = better quality but slower training</p>
+                    </div>
+
+                    <!-- Epochs -->
+                    <div class="slider-container">
+                        <label class="form-label">
+                            Epochs: <span class="slider-value" id="epochsValue">3</span>
+                        </label>
+                        <input type="range" id="epochs" class="slider" 
+                               min="1" max="5" step="1" value="3" 
+                               oninput="updateSlider('epochs', this.value)">
+                        <p class="text-muted">More epochs = better learning but longer training</p>
+                    </div>
+
+                    <!-- Learning Rate -->
+                    <div class="form-group">
+                        <label class="form-label">Learning Rate</label>
+                        <select id="learningRate" class="form-control" onchange="updateEstimation()">
+                            <option value="0.00001">Low (0.00001) - Stable</option>
+                            <option value="0.0001" selected>Medium (0.0001) - Recommended</option>
+                            <option value="0.001">High (0.001) - Fast but risky</option>
+                        </select>
+                    </div>
+
+                    <!-- Estimation -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h4>📊 Training Estimation</h4>
+                        <div class="grid grid-2 gap-2 mt-2">
+                            <div>
+                                <p><strong>Estimated Time:</strong></p>
+                                <p class="text-primary" id="estimatedTime">~2 hours</p>
+                            </div>
+                            <div>
+                                <p><strong>Estimated VRAM:</strong></p>
+                                <p class="text-primary" id="estimatedVRAM">~8GB</p>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-2">
+                            ⚠️ Estimates are approximate and may vary based on dataset size and hardware.
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer flex justify-between">
+                    <button onclick="prevStep()" class="btn btn-outline">← Back</button>
+                    <button onclick="startTraining()" id="startBtn" class="btn btn-success">
+                        🚀 Start Training
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        let currentStep = 1;
+        let selectedDataset = null;
+        let selectedModel = null;
+        let config = {
+            lora_rank: 16,
+            epochs: 3,
+            learning_rate: 0.0001
+        };
+
+        // Load datasets on page load
+        document.addEventListener('DOMContentLoaded', loadDatasets);
+
+        async function loadDatasets() {
+            try {
+                const data = await api.listDatasets(1, 100);
+                
+                if (data.data.length === 0) {
+                    document.getElementById('datasetsLoading').classList.add('hidden');
+                    document.getElementById('datasetsEmpty').classList.remove('hidden');
+                    return;
+                }
+
+                const select = document.getElementById('datasetSelect');
+                data.data.forEach(dataset => {
+                    const option = document.createElement('option');
+                    option.value = dataset.ID;
+                    option.textContent = dataset.name;
+                    option.dataset.info = JSON.stringify(dataset);
+                    select.appendChild(option);
+                });
+
+                document.getElementById('datasetsLoading').classList.add('hidden');
+                document.getElementById('datasetsContainer').classList.remove('hidden');
+
+                select.addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        const dataset = JSON.parse(e.target.selectedOptions[0].dataset.info);
+                        showDatasetInfo(dataset);
+                        selectedDataset = dataset;
+                        document.getElementById('step1Next').disabled = false;
+                    } else {
+                        document.getElementById('datasetInfo').classList.add('hidden');
+                        selectedDataset = null;
+                        document.getElementById('step1Next').disabled = true;
+                    }
+                });
+
+            } catch (error) {
+                showToast('Failed to load datasets: ' + error.message, 'error');
+            }
+        }
+
+        function showDatasetInfo(dataset) {
+            document.getElementById('datasetName').textContent = dataset.name;
+            document.getElementById('datasetDescription').textContent = dataset.description || 'No description';
+            document.getElementById('datasetSize').textContent = formatBytes(dataset.file_size);
+            document.getElementById('datasetSamples').textContent = dataset.sample_count || 'Unknown';
+            document.getElementById('datasetInfo').classList.remove('hidden');
+        }
+
+        function selectModel(model) {
+            selectedModel = model;
+            
+            // Update UI
+            document.querySelectorAll('.model-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+            
+            document.getElementById('step2Next').disabled = false;
+            updateEstimation();
+        }
+
+        function updateSlider(type, value) {
+            document.getElementById(type + 'Value').textContent = value;
+            config[type === 'rank' ? 'lora_rank' : 'epochs'] = parseInt(value);
+            updateEstimation();
+        }
+
+        function updateEstimation() {
+            config.learning_rate = parseFloat(document.getElementById('learningRate').value);
+            
+            const time = estimateTrainingTime(config);
+            const vram = estimateVRAM(config);
+            
+            document.getElementById('estimatedTime').textContent = '~' + formatTime(time);
+            document.getElementById('estimatedVRAM').textContent = '~' + vram + 'GB';
+        }
+
+        function nextStep() {
+            if (currentStep < 3) {
+                // Hide current step
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
+                document.getElementById('step' + currentStep + 'Indicator').classList.add('completed');
+                
+                // Show next step
+                currentStep++;
+                document.getElementById('step' + currentStep).classList.add('active');
+                document.getElementById('step' + currentStep + 'Indicator').classList.add('active');
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                // Hide current step
+                document.getElementById('step' + currentStep).classList.remove('active');
+                document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
+                
+                // Show previous step
+                currentStep--;
+                document.getElementById('step' + currentStep).classList.add('active');
+                document.getElementById('step' + currentStep + 'Indicator').classList.remove('completed');
+                document.getElementById('step' + currentStep + 'Indicator').classList.add('active');
+            }
+        }
+
+        async function startTraining() {
+            if (!selectedDataset || !selectedModel) {
+                showToast('Please complete all steps', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('startBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner spinner-sm"></span> Starting...';
+
+            try {
+                const jobConfig = {
+                    base_model: selectedModel,
+                    lora_rank: config.lora_rank,
+                    epochs: config.epochs,
+                    learning_rate: config.learning_rate
+                };
+
+                const job = await api.createJob(selectedDataset.ID, jobConfig);
+                
+                showToast('Training job created successfully!', 'success');
+                
+                // Redirect to training view
+                setTimeout(() => {
+                    window.location.href = 'training-view.html?id=' + job.ID;
+                }, 1500);
+
+            } catch (error) {
+                showToast('Failed to create job: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Start Training';
+            }
+        }
+    </script>
+</body>
+</html>
