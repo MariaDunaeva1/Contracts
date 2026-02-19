@@ -35,7 +35,7 @@ func Connect(databaseURL string) {
 	log.Println("✅ Connected to PostgreSQL successfully")
 
 	// AutoMigrate models
-	err = DB.AutoMigrate(&models.Dataset{}, &models.Job{})
+	err = DB.AutoMigrate(&models.Dataset{}, &models.Job{}, &models.Model{}, &models.Evaluation{}, &models.LogEntry{})
 	if err != nil {
 		log.Printf("❌ AutoMigrate failed: %v", err)
 	} else {

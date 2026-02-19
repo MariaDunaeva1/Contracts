@@ -9,6 +9,7 @@ import (
 	"finetune-studio/internal/services/kaggle"
 	"finetune-studio/internal/storage"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -149,6 +150,9 @@ func (w *WorkerPool) processJobKaggle(workerID int, job *models.Job) {
 		if status == "completed" {
 			updateJobStatus(job, "completed")
 			log.Printf("[Worker %d] Job %d completed on Kaggle!", workerID, job.ID)
+			
+			// Create model record after successful completion
+			w.handleKernelComplete(job)
 			return
 		} else if status == "failed" {
 			updateJobFailed(job, "Kaggle kernel execution failed")
@@ -195,6 +199,9 @@ func (w *WorkerPool) processJobSimulated(workerID int, job *models.Job) {
 
 	updateJobStatus(job, "completed")
 	log.Printf("[Worker %d] Job %d completed (simulated)", workerID, job.ID)
+	
+	// Create model record after successful completion
+	w.handleKernelComplete(job)
 }
 
 func updateJobStatus(job *models.Job, status string) {
@@ -214,4 +221,67 @@ func updateJobFailed(job *models.Job, reason string) {
 	job.Metrics = datatypes.JSON(metricsJSON)
 	database.DB.Save(job)
 	log.Printf("[Job %d] FAILED: %s", job.ID, reason)
+}
+
+// handleKernelComplete creates a model record after job completion
+func (w *WorkerPool) handleKernelComplete(job *models.Job) {
+	log.Printf("[Job %d] Creating model record", job.ID)
+
+	// Parse job configuration to get base model
+	config := make(map[string]interface{})
+	json.Unmarshal([]byte(job.Configuration), &config)
+	
+	baseModel := "llama-3.2-3b"
+	if bm, ok := config["base_model"].(string); ok && bm != "" {
+		baseModel = bm
+	}
+
+	// Fetch metrics from MinIO if available
+	ctx := context.Background()
+	metricsPath := fmt.Sprintf("%d/metrics.json", job.ID)
+	var trainingMetrics map[string]interface{}
+	
+	obj, err := storage.Client.GetObject(ctx, "models", metricsPath, minio.GetObjectOptions{})
+	if err == nil {
+		data, err := io.ReadAll(obj)
+		obj.Close()
+		if err == nil {
+			json.Unmarshal(data, &trainingMetrics)
+		}
+	}
+
+	// If no metrics from MinIO, use job metrics
+	if trainingMetrics == nil {
+		json.Unmarshal([]byte(job.Metrics), &trainingMetrics)
+	}
+
+	metricsJSON, _ := json.Marshal(trainingMetrics)
+
+	// Create model record
+	modelPath := fmt.Sprintf("%d", job.ID)
+	model := models.Model{
+		Name:             fmt.Sprintf("Model from Job %d", job.ID),
+		Description:      fmt.Sprintf("Fine-tuned model from dataset: %s", job.Dataset.Name),
+		BaseModel:        baseModel,
+		Type:             "lora",
+		JobID:            &job.ID,
+		StoragePath:      modelPath,
+		LoRAAdaptersPath: fmt.Sprintf("%s/lora_adapters", modelPath),
+		GGUFPath:         fmt.Sprintf("%s/gguf", modelPath),
+		TrainingMetrics:  datatypes.JSON(metricsJSON),
+		Status:           "ready",
+	}
+
+	// Calculate total size
+	modelStorage := storage.NewModelStorage(storage.Client)
+	if size, err := modelStorage.CalculateTotalSize(ctx, modelPath); err == nil {
+		model.TotalSize = size
+	}
+
+	if err := database.DB.Create(&model).Error; err != nil {
+		log.Printf("[Job %d] Failed to create model record: %v", job.ID, err)
+		return
+	}
+
+	log.Printf("[Job %d] Model record created: ID=%d", job.ID, model.ID)
 }
