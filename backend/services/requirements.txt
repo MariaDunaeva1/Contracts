@@ -1,0 +1,16 @@
+# RAG Service Dependencies
+
+# FastAPI and server
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+
+# Vector database
+chromadb==0.4.22
+sentence-transformers==2.3.1
+
+# LLM and embeddings
+requests==2.31.0
+
+# Utilities
+python-multipart==0.0.6

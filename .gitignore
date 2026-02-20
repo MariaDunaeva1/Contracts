@@ -213,3 +213,4 @@ models/
 data/contracts/*.json
 backend/server.exe
 backend/tidy.log
+chroma_db/

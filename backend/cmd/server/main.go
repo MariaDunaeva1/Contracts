@@ -247,6 +247,18 @@ func main() {
 		v1.PUT("/evaluations/:id", evaluationHandler.UpdateEvaluation)
 	}
 
+	// Contract Analysis Routes (RAG)
+	contractHandler := handlers.NewContractHandler("http://localhost:8001")
+	{
+		v1.POST("/contracts/analyze", expensiveLimiter, contractHandler.AnalyzeContract)
+		v1.POST("/clauses/search", contractHandler.SearchClauses)
+		v1.GET("/contracts/:id/similar", contractHandler.FindSimilarContracts)
+		v1.GET("/contracts/:id/clauses", contractHandler.GetContractClauses)
+		v1.DELETE("/contracts/:id/index", contractHandler.DeleteContractIndex)
+		v1.GET("/rag/health", contractHandler.RAGHealth)
+		v1.GET("/rag/stats", contractHandler.RAGStats)
+	}
+
 	// 11. Setup HTTP server with graceful shutdown
 	port := getEnv("PORT", "8080")
 	srv := &http.Server{

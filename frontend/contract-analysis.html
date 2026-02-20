@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexAnalyzer - Contract Analysis</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .analysis-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .upload-section textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .upload-section button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .upload-section button:hover {
+            background: #45a049;
+        }
+
+        .upload-section button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .risk-badge.high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .risk-badge.medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .risk-badge.low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .clause-card {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .clause-card.high {
+            border-left-color: #f44336;
+        }
+
+        .clause-card.medium {
+            border-left-color: #ff9800;
+        }
+
+        .clause-card.low {
+            border-left-color: #4CAF50;
+        }
+
+        .clause-card h3 {
+            margin-top: 0;
+            color: #333;
+            text-transform: capitalize;
+        }
+
+        .clause-card p {
+            color: #666;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .favorability {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge.danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .badge.warning {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .similar-group {
+            margin-bottom: 30px;
+        }
+
+        .similar-group h4 {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .similar-clause {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .similar-clause .contract-name {
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .similar-clause .similarity {
+            color: #4CAF50;
+            font-size: 12px;
+            float: right;
+        }
+
+        .similar-clause p {
+            color: #666;
+            font-size: 14px;
+            margin: 10px 0 0 0;
+        }
+
+        .key-findings {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+
+        .key-findings h3 {
+            margin-top: 0;
+            color: #ef6c00;
+        }
+
+        .key-findings ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .key-findings li {
+            margin: 8px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Fine-Tune Studio</div>
+        <div class="nav-links">
+            <a href="index.html">Dashboard</a>
+            <a href="dataset-upload.html">Datasets</a>
+            <a href="training-new.html">Training</a>
+            <a href="evaluation-view.html">Evaluation</a>
+            <a href="contract-analysis.html" class="active">Contract Analysis</a>
+        </div>
+    </nav>
+
+    <div class="analysis-container">
+        <h1>⚖️ LexAnalyzer - Contract Analysis</h1>
+        <p>Upload a contract to analyze clauses, compare with historical contracts, and assess risk using AI.</p>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Contract</h2>
+            <input type="text" id="contractName" placeholder="Contract Name (optional)" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 4px;">
+            
+            <!-- Model Selector -->
+            <div style="margin-bottom: 15px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                    <input type="checkbox" id="useFinetuned" checked style="margin-right: 8px;">
+                    Use Fine-Tuned Model (Specialized for Legal Contracts)
+                </label>
+                <p style="margin: 0; font-size: 13px; color: #666;">
+                    ✅ Fine-tuned: Better accuracy for legal analysis (+25-30% improvement)<br>
+                    ⚪ Base model: General purpose, faster but less specialized
+                </p>
+            </div>
+            
+            <textarea id="contractText" placeholder="Paste contract text here..."></textarea>
+            <button id="analyzeBtn" onclick="analyzeContract()">Analyze Contract</button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Analyzing contract... This may take 30-60 seconds.</p>
+            <p style="color: #666; font-size: 14px;">Extracting clauses, searching historical data, and assessing risk...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="results-section">
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <h2>Executive Summary</h2>
+                <div id="overallRisk" class="risk-badge"></div>
+                <div id="summaryText"></div>
+                <div id="keyFindings" class="key-findings" style="display:none;">
+                    <h3>Key Findings</h3>
+                    <ul id="findingsList"></ul>
+                </div>
+            </div>
+
+            <!-- Clauses Comparison -->
+            <div class="comparison-grid">
+                <div class="panel">
+                    <h2>Extracted Clauses</h2>
+                    <div id="clausesList"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Similar Historical Clauses</h2>
+                    <div id="similarList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/contract-analysis.js"></script>
+</body>
+</html>

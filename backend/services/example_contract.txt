@@ -1,0 +1,37 @@
+SUPPLIER AGREEMENT
+
+This Supplier Agreement ("Agreement") is entered into as of January 1, 2024, between TechCorp Inc. ("Company") and Global Supplies Ltd. ("Supplier").
+
+1. INDEMNIFICATION
+
+Supplier shall indemnify, defend, and hold harmless Company, its officers, directors, employees, and agents from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or resulting from Supplier's performance or non-performance under this Agreement, including but not limited to claims of product defects, intellectual property infringement, or breach of warranty. This indemnification obligation shall survive termination of this Agreement.
+
+2. PAYMENT TERMS
+
+Company shall pay Supplier within forty-five (45) days of receipt of a valid invoice. Late payments shall accrue interest at a rate of 1.5% per month. Supplier reserves the right to suspend deliveries if payment is more than sixty (60) days overdue.
+
+3. TERMINATION
+
+Either party may terminate this Agreement with ninety (90) days written notice. Company may terminate immediately for cause, including material breach by Supplier. Upon termination, Company shall pay for all goods delivered and accepted prior to the termination date.
+
+4. LIABILITY LIMITATION
+
+In no event shall either party's total liability under this Agreement exceed the total amount paid by Company to Supplier in the twelve (12) months preceding the claim. This limitation shall not apply to claims arising from gross negligence, willful misconduct, or breach of confidentiality obligations.
+
+5. CONFIDENTIALITY
+
+Each party agrees to maintain in confidence all Confidential Information received from the other party for a period of five (5) years following disclosure. Confidential Information shall not include information that is publicly available, independently developed, or rightfully received from a third party.
+
+6. WARRANTY
+
+Supplier warrants that all goods supplied shall be free from defects in materials and workmanship for a period of twelve (12) months from delivery. Supplier's sole obligation under this warranty shall be to repair or replace defective goods at Supplier's option.
+
+7. INTELLECTUAL PROPERTY
+
+All intellectual property rights in goods supplied shall remain with Supplier. Company receives a non-exclusive, non-transferable license to use such intellectual property solely in connection with the goods supplied.
+
+8. DISPUTE RESOLUTION
+
+Any disputes arising under this Agreement shall first be subject to good faith negotiations between senior executives of both parties. If not resolved within thirty (30) days, disputes shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.

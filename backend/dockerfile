@@ -6,15 +6,26 @@ WORKDIR /app
 RUN apk add --no-cache git python3 py3-pip && \
     pip install kaggle --break-system-packages
 
-COPY go.mod ./
-# Descargar dependencias explícitamente y verificar
-RUN go mod tidy && go mod download && ls -la
+# Crear directorio para configuración de Kaggle
+RUN mkdir -p /root/.kaggle
 
+# Copiar archivos de dependencias
+COPY go.mod go.sum ./
+
+# Descargar dependencias
+RUN go mod download
+
+# Copiar todo el código
 COPY . .
-# Forzar tidy de nuevo después de copiar el código por si acaso
-RUN go mod tidy
 
-# Compilar a una ruta fuera de /app para evitar que el volumen montado (./backend:/app) oculte el binario
+# Compilar el servidor
 RUN go build -o /usr/local/bin/server cmd/server/main.go
 
-CMD ["/usr/local/bin/server"]
+# Script para crear kaggle.json desde variables de entorno
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > /root/.kaggle/kaggle.json' >> /entrypoint.sh && \
+    echo 'chmod 600 /root/.kaggle/kaggle.json' >> /entrypoint.sh && \
+    echo 'exec /usr/local/bin/server' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+CMD ["/entrypoint.sh"]
