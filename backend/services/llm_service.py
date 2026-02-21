@@ -22,11 +22,14 @@ class LLMService:
         
         # Default models
         if provider == "groq":
-            self.model_base = "llama-3.2-3b-preview"  # Groq model name
-            self.model_finetuned = "llama-3.2-3b-preview"  # Same for now, will use system prompt
+            self.model_base = "llama-3.1-8b-instant"
+            self.model_finetuned = "llama-3.3-70b-versatile" # Use high-spec model for legal tasks
         else:
             self.model_base = "llama3.2:3b"
             self.model_finetuned = "legal-contract-analyzer"
+            
+        # Cache for available models
+        self.available_models = []
     
     def complete(self, prompt: str, model: Optional[str] = None, 
                  use_finetuned: bool = True, temperature: float = 0.7, 
@@ -49,6 +52,15 @@ class LLMService:
             model_name = model
         else:
             model_name = self.model_finetuned if use_finetuned else self.model_base
+            
+            # Fallback for Ollama if finetuned model doesn't exist
+            if self.provider == "ollama" and use_finetuned:
+                if not self.available_models:
+                    self.available_models = self.list_models()
+                
+                if model_name not in self.available_models and self.model_finetuned not in self.available_models:
+                    print(f"[LLM] Warning: Fine-tuned model '{model_name}' not found. Falling back to base model '{self.model_base}'.")
+                    model_name = self.model_base
         
         # Add legal system prompt if using fine-tuned
         if use_finetuned and self.provider == "groq":
@@ -156,10 +168,8 @@ class LLMService:
         """List available models"""
         if self.provider == "groq":
             return [
-                "llama-3.2-3b-preview",
-                "llama-3.2-1b-preview", 
+                "llama-3.3-70b-versatile",
                 "llama-3.1-8b-instant",
-                "mixtral-8x7b-32768"
             ]
         else:
             try:

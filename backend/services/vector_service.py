@@ -11,21 +11,20 @@ from typing import Dict, List, Any, Optional
 class VectorService:
     def __init__(self, persist_dir="./chroma_db"):
         """Initialize ChromaDB client and embedding model"""
-        self.client = chromadb.Client(Settings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=persist_dir,
-            anonymized_telemetry=False
-        ))
-        
         # Get or create collection
+        print(f"[VectorService] Initializing ChromaDB at {persist_dir}...", flush=True)
+        self.client = chromadb.PersistentClient(path=persist_dir)
+        
+        print(f"[VectorService] Accessing collection: contracts...", flush=True)
         self.collection = self.client.get_or_create_collection(
             name="contracts",
             metadata={"hnsw:space": "cosine"}
         )
         
         # Use sentence-transformers for embeddings
-        # all-MiniLM-L6-v2: fast, good quality, 384 dimensions
+        print("[VectorService] Loading SentenceTransformer model: all-MiniLM-L6-v2...", flush=True)
         self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+        print("[VectorService] Model loaded successfully.", flush=True)
     
     def index_contract(self, contract_id: str, contract_name: str, clauses: List[Dict]) -> Dict[str, Any]:
         """

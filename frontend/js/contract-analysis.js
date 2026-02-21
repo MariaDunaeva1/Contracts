@@ -2,66 +2,20 @@
  * Contract Analysis with RAG
  */
 
-async function analyzeContract() {
-    const contractText = document.getElementById('contractText').value.trim();
-    const contractName = document.getElementById('contractName').value.trim() || 'New Contract';
-    const useFinetuned = document.getElementById('useFinetuned').checked;
-    
-    if (!contractText) {
-        alert('Please enter contract text');
-        return;
-    }
-    
-    // Show loading
-    document.getElementById('loading').classList.add('active');
-    document.getElementById('results').classList.remove('active');
-    document.getElementById('analyzeBtn').disabled = true;
-    
-    try {
-        const response = await fetch('/api/v1/contracts/analyze', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contract_text: contractText,
-                contract_name: contractName,
-                use_finetuned: useFinetuned
-            })
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || error.details || 'Analysis failed');
-        }
-        
-        const result = await response.json();
-        console.log('Analysis result:', result);
-        
-        displayResults(result);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert(`Analysis failed: ${error.message}\n\nMake sure the RAG service is running on port 8001.`);
-    } finally {
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('analyzeBtn').disabled = false;
-    }
-}
 
 function displayResults(result) {
     // Show results section
     document.getElementById('results').classList.add('active');
-    
+
     // Display summary
     const riskAssessment = result.risk_assessment || {};
     const summary = result.summary || {};
-    
+
     const riskBadge = document.getElementById('overallRisk');
     const overallRisk = riskAssessment.overall_risk || 'unknown';
     riskBadge.className = `risk-badge ${overallRisk}`;
     riskBadge.textContent = overallRisk.toUpperCase() + ' RISK';
-    
+
     // Summary text
     const summaryText = document.getElementById('summaryText');
     summaryText.innerHTML = `
@@ -72,7 +26,7 @@ function displayResults(result) {
         <p><strong>Risk Score:</strong> ${((summary.risk_score || 0) * 100).toFixed(0)}%</p>
         <p style="margin-top: 15px;">${riskAssessment.executive_summary || ''}</p>
     `;
-    
+
     // Key findings
     const keyFindings = summary.key_findings || riskAssessment.top_risks || [];
     if (keyFindings.length > 0) {
@@ -80,11 +34,11 @@ function displayResults(result) {
         const findingsList = document.getElementById('findingsList');
         findingsList.innerHTML = keyFindings.map(finding => `<li>${finding}</li>`).join('');
     }
-    
+
     // Display clauses
     const comparisons = result.comparisons || [];
     const clausesList = document.getElementById('clausesList');
-    
+
     if (comparisons.length === 0) {
         clausesList.innerHTML = '<p>No clauses extracted.</p>';
     } else {
@@ -92,7 +46,7 @@ function displayResults(result) {
             const clause = comp.clause || {};
             const comparison = comp.comparison || {};
             const favorabilityScore = comparison.favorability_score || 0;
-            
+
             return `
                 <div class="clause-card ${clause.risk_level || 'medium'}">
                     <h3>${index + 1}. ${clause.type || 'Unknown'}</h3>
@@ -117,17 +71,17 @@ function displayResults(result) {
             `;
         }).join('');
     }
-    
+
     // Display similar clauses
     const similarList = document.getElementById('similarList');
-    
+
     if (comparisons.length === 0) {
         similarList.innerHTML = '<p>No historical data available.</p>';
     } else {
         similarList.innerHTML = comparisons.map((comp, index) => {
             const clause = comp.clause || {};
             const similarClauses = comp.similar_clauses || [];
-            
+
             if (similarClauses.length === 0) {
                 return `
                     <div class="similar-group">
@@ -136,15 +90,15 @@ function displayResults(result) {
                     </div>
                 `;
             }
-            
+
             return `
                 <div class="similar-group">
                     <h4>${index + 1}. Similar to: ${clause.type || 'Unknown'}</h4>
                     ${similarClauses.map(sim => {
-                        const metadata = sim.metadata || {};
-                        const similarity = (sim.similarity || 0) * 100;
-                        
-                        return `
+                const metadata = sim.metadata || {};
+                const similarity = (sim.similarity || 0) * 100;
+
+                return `
                             <div class="similar-clause">
                                 <span class="contract-name">${metadata.contract_name || 'Unknown Contract'}</span>
                                 <span class="similarity">${similarity.toFixed(0)}% similar</span>
@@ -156,14 +110,68 @@ function displayResults(result) {
                                 <p>${(sim.text || '').substring(0, 200)}${sim.text && sim.text.length > 200 ? '...' : ''}</p>
                             </div>
                         `;
-                    }).join('')}
+            }).join('')}
                 </div>
             `;
         }).join('');
     }
-    
+
     // Scroll to results
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function analyzeContract() {
+    console.log('Starting analysis...');
+    const contractText = document.getElementById('contractText').value.trim();
+    const contractName = document.getElementById('contractName').value.trim() || 'New Contract';
+
+    // Check if radio button is selected
+    let intelligenceEl = document.querySelector('input[name="intelligence"]:checked');
+
+    // Compatibility fallback for older templates/caches
+    if (!intelligenceEl) {
+        intelligenceEl = document.getElementById('useFinetuned') || document.getElementById('useBase');
+        if (intelligenceEl && !intelligenceEl.checked) {
+            // If we found elements by ID but none is checked, check which one matches logic
+        }
+    }
+
+    if (!intelligenceEl) {
+        alert('Please select Intelligence Type (Base or Fine-tuned)');
+        return;
+    }
+    const useFinetuned = (intelligenceEl.value === 'finetuned') || (intelligenceEl.id === 'useFinetuned');
+    const kbId = document.getElementById('kbSelect').value;
+
+    if (!contractText) {
+        alert('Please enter contract text');
+        return;
+    }
+
+    // Show loading
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('results').classList.remove('active');
+    document.getElementById('analyzeBtn').disabled = true;
+
+    try {
+        console.log('Calling API...');
+        const result = await api.analyzeContract({
+            contract_text: contractText,
+            contract_name: contractName,
+            use_finetuned: useFinetuned,
+            knowledge_base_id: kbId
+        });
+
+        console.log('Analysis result:', result);
+        displayResults(result);
+
+    } catch (error) {
+        console.error('Analysis Error:', error);
+        alert(`Analysis failed: ${error.message}\n\nMake sure the RAG service is running on port 8001.`);
+    } finally {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('analyzeBtn').disabled = false;
+    }
 }
 
 function getFavorabilityBadge(score) {
@@ -176,12 +184,14 @@ function getFavorabilityBadge(score) {
     }
 }
 
-// Check RAG service health on page load
+// Check RAG service health and load datasets on page load
 window.addEventListener('DOMContentLoaded', async () => {
+    loadKnowledgeBases();
+
     try {
         const response = await fetch('/api/v1/rag/health');
         const health = await response.json();
-        
+
         if (health.status !== 'healthy') {
             console.warn('RAG service is not fully healthy:', health);
             alert('Warning: RAG service may not be fully operational. Some features may not work.');
@@ -193,3 +203,30 @@ window.addEventListener('DOMContentLoaded', async () => {
         alert('Warning: Cannot connect to RAG service. Make sure it is running on port 8001.');
     }
 });
+
+async function loadKnowledgeBases() {
+    try {
+        const datasets = await api.listDatasets(1, 100);
+        const select = document.getElementById('kbSelect');
+
+        if (datasets.data && datasets.data.length > 0) {
+            datasets.data.forEach(ds => {
+                const option = document.createElement('option');
+                option.value = ds.ID || ds.id; // Support both cases
+                option.textContent = ds.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Add LEDGAR as a permanent example if not already in the list
+        const ledgarExists = datasets.data && datasets.data.some(ds => ds.name.toLowerCase().includes('ledgar'));
+        if (!ledgarExists) {
+            const ledgarOption = document.createElement('option');
+            ledgarOption.value = "example-ledgar";
+            ledgarOption.textContent = "🛡️ LEDGAR (Contract Clauses Example)";
+            select.appendChild(ledgarOption);
+        }
+    } catch (error) {
+        console.error('Failed to load knowledge bases:', error);
+    }
+}

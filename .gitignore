@@ -214,3 +214,6 @@ data/contracts/*.json
 backend/server.exe
 backend/tidy.log
 chroma_db/
+backend_logs*.txt
+backend_errors*.txt
+raw_datasets.json

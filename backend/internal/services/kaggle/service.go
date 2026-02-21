@@ -20,10 +20,10 @@ func NewService(workDir string) *Service {
 
 // DatasetMetadata matches dataset-metadata.json
 type DatasetMetadata struct {
-	Title      string       `json:"title"`
-	Id         string       `json:"id"`
-	Licenses   []License    `json:"licenses"`
-	IsPrivate  bool         `json:"isPrivate"`
+	Title     string    `json:"title"`
+	Id        string    `json:"id"`
+	Licenses  []License `json:"licenses"`
+	IsPrivate bool      `json:"isPrivate"`
 }
 
 type License struct {
@@ -32,16 +32,16 @@ type License struct {
 
 // KernelMetadata matches kernel-metadata.json
 type KernelMetadata struct {
-	Id             string `json:"id"`
-	Title          string `json:"title"`
-	CodeFile       string `json:"code_file"`
-	Language       string `json:"language"`
-	KernelType     string `json:"kernel_type"`
-	IsPrivate      bool   `json:"is_private"`
-	EnableGpu      bool   `json:"enable_gpu"`
-	EnableInternet bool   `json:"enable_internet"`
-	DatasetSources []string `json:"dataset_sources"`
-	KernelSources  []string `json:"kernel_sources"`
+	Id                 string   `json:"id"`
+	Title              string   `json:"title"`
+	CodeFile           string   `json:"code_file"`
+	Language           string   `json:"language"`
+	KernelType         string   `json:"kernel_type"`
+	IsPrivate          bool     `json:"is_private"`
+	EnableGpu          bool     `json:"enable_gpu"`
+	EnableInternet     bool     `json:"enable_internet"`
+	DatasetSources     []string `json:"dataset_sources"`
+	KernelSources      []string `json:"kernel_sources"`
 	CompetitionSources []string `json:"competition_sources"`
 }
 
@@ -75,14 +75,14 @@ func (s *Service) CreateDataset(name string, filePath string) (string, error) {
 		return "", fmt.Errorf("KAGGLE_USERNAME not set")
 	}
 	ref := fmt.Sprintf("%s/%s", username, slug)
-	
+
 	meta := DatasetMetadata{
-		Title: name,
-		Id:    ref,
-		Licenses: []License{{Name: "CC0-1.0"}},
+		Title:     name,
+		Id:        ref,
+		Licenses:  []License{{Name: "CC0-1.0"}},
 		IsPrivate: true,
 	}
-	
+
 	metaBytes, _ := json.MarshalIndent(meta, "", "  ")
 	if err := os.WriteFile(filepath.Join(stagingDir, "dataset-metadata.json"), metaBytes, 0644); err != nil {
 		return "", err
@@ -115,19 +115,24 @@ func (s *Service) PushKernel(slug string, notebookContent []byte, datasetRefs []
 	// 2. Write Metadata
 	username := os.Getenv("KAGGLE_USERNAME")
 	ref := fmt.Sprintf("%s/%s", username, slug)
-	
+
 	meta := KernelMetadata{
-		Id:             ref,
-		Title:          slug, // Use slug as title for simplicity
-		CodeFile:       "notebook.ipynb",
-		Language:       "python",
-		KernelType:     "notebook",
-		IsPrivate:      true,
-		EnableGpu:      true,
-		EnableInternet: true,
-		DatasetSources: datasetRefs,
+		Id:                 ref,
+		Title:              slug, // Use slug as title for simplicity
+		CodeFile:           "notebook.ipynb",
+		Language:           "python",
+		KernelType:         "notebook",
+		IsPrivate:          true,
+		EnableGpu:          true,
+		EnableInternet:     true,
+		DatasetSources:     datasetRefs,
+		KernelSources:      []string{},
+		CompetitionSources: []string{},
 	}
-	
+	if meta.DatasetSources == nil {
+		meta.DatasetSources = []string{}
+	}
+
 	metaBytes, _ := json.MarshalIndent(meta, "", "  ")
 	if err := os.WriteFile(filepath.Join(stagingDir, "kernel-metadata.json"), metaBytes, 0644); err != nil {
 		return "", err
@@ -151,15 +156,18 @@ func (s *Service) GetKernelStatus(ref string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to get status: %v, out: %s", err, string(out))
 	}
-	// Parse output like: "Kernel 'user/slug' status: complete"
-	output := string(out)
-	if strings.Contains(output, "status: complete") {
+
+	output := strings.ToLower(string(out))
+	if strings.Contains(output, "complete") {
 		return "completed", nil
-	} else if strings.Contains(output, "status: running") {
+	} else if strings.Contains(output, "running") || strings.Contains(output, "queued") {
 		return "running", nil
-	} else if strings.Contains(output, "status: error") {
+	} else if strings.Contains(output, "error") || strings.Contains(output, "failed") {
 		return "failed", nil
+	} else if strings.Contains(output, "cancel") {
+		return "cancelled", nil
 	}
+
 	return "unknown", nil
 }
 

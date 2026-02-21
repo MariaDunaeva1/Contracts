@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,7 +17,7 @@
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
         }
 
@@ -72,8 +73,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .results-section {
@@ -88,7 +94,7 @@
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
         }
 
@@ -132,7 +138,7 @@
             background: white;
             padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .panel h2 {
@@ -262,15 +268,17 @@
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Fine-Tune Studio</div>
-        <div class="nav-links">
-            <a href="index.html">Dashboard</a>
-            <a href="dataset-upload.html">Datasets</a>
-            <a href="training-new.html">Training</a>
-            <a href="evaluation-view.html">Evaluation</a>
-            <a href="contract-analysis.html" class="active">Contract Analysis</a>
+        <div class="container-fluid flex justify-between items-center">
+            <a href="index.html" class="navbar-brand">⚖️ LexAnalyzer</a>
+            <ul class="navbar-nav">
+                <li><a href="index.html" class="nav-link">Dashboard</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Knowledge Base</a></li>
+                <li><a href="training-new.html" class="nav-link">Fine-tune Model</a></li>
+                <li><a href="contract-analysis.html" class="nav-link active">Contract Analysis</a></li>
+            </ul>
         </div>
     </nav>
 
@@ -281,20 +289,40 @@
         <!-- Upload Section -->
         <div class="upload-section">
             <h2>Upload Contract</h2>
-            <input type="text" id="contractName" placeholder="Contract Name (optional)" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 4px;">
-            
-            <!-- Model Selector -->
-            <div style="margin-bottom: 15px; padding: 15px; background: #f5f5f5; border-radius: 4px;">
-                <label style="display: block; margin-bottom: 10px; font-weight: bold;">
-                    <input type="checkbox" id="useFinetuned" checked style="margin-right: 8px;">
-                    Use Fine-Tuned Model (Specialized for Legal Contracts)
-                </label>
-                <p style="margin: 0; font-size: 13px; color: #666;">
-                    ✅ Fine-tuned: Better accuracy for legal analysis (+25-30% improvement)<br>
-                    ⚪ Base model: General purpose, faster but less specialized
-                </p>
+            <input type="text" id="contractName" placeholder="Contract Name (optional)"
+                style="width: 100%; padding: 10px; margin-bottom: 15px; border: 2px solid #e0e0e0; border-radius: 4px;">
+
+            <!-- Model & Knowledge Selection -->
+            <div class="grid grid-2 gap-3 mb-3">
+                <div style="padding: 15px; background: #f5f5f5; border-radius: 4px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">🧠 Intelligence (The
+                        Brain)</label>
+                    <div class="flex gap-2">
+                        <label class="flex items-center gap-1">
+                            <input type="radio" id="useBase" name="intelligence" value="base" checked> Base
+                        </label>
+                        <label class="flex items-center gap-1">
+                            <input type="radio" id="useFinetuned" name="intelligence" value="finetuned"> Fine-tuned
+                        </label>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                        Fine-tuned model has +30% better logic for legal clauses.
+                    </p>
+                </div>
+
+                <div style="padding: 15px; background: #f5f5f5; border-radius: 4px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">📚 Knowledge Base (The
+                        Memory)</label>
+                    <select id="kbSelect" class="form-control">
+                        <option value="">Global (All Knowledge)</option>
+                        <!-- Options populated via JS -->
+                    </select>
+                    <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                        Select a specific dataset to use as a RAG reference.
+                    </p>
+                </div>
             </div>
-            
+
             <textarea id="contractText" placeholder="Paste contract text here..."></textarea>
             <button id="analyzeBtn" onclick="analyzeContract()">Analyze Contract</button>
         </div>
@@ -303,7 +331,8 @@
         <div id="loading" class="loading">
             <div class="spinner"></div>
             <p>Analyzing contract... This may take 30-60 seconds.</p>
-            <p style="color: #666; font-size: 14px;">Extracting clauses, searching historical data, and assessing risk...</p>
+            <p style="color: #666; font-size: 14px;">Extracting clauses, searching historical data, and assessing
+                risk...</p>
         </div>
 
         <!-- Results Section -->
@@ -337,4 +366,5 @@
     <script src="js/api.js"></script>
     <script src="js/contract-analysis.js"></script>
 </body>
+
 </html>

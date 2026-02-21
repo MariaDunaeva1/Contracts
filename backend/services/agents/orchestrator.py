@@ -33,7 +33,8 @@ class AgentOrchestrator:
         contract_text: str, 
         contract_name: str = "New Contract",
         contract_id: str = None,
-        use_finetuned: bool = True
+        use_finetuned: bool = True,
+        knowledge_base_id: str = None
     ) -> Dict[str, Any]:
         """
         Full contract analysis workflow
@@ -68,7 +69,7 @@ class AgentOrchestrator:
         
         try:
             # Step 1: Extract clauses
-            print(f"[Orchestrator] Step 1: Extracting clauses (model: {'fine-tuned' if use_finetuned else 'base'})...")
+            print(f"[Orchestrator] Step 1: Extracting clauses (model: {'fine-tuned' if use_finetuned else 'base'})...", flush=True)
             extraction_result = self.extractor.execute({
                 'contract_text': contract_text
             })
@@ -95,7 +96,7 @@ class AgentOrchestrator:
                 return result
             
             # Step 2: Index in vector DB
-            print(f"[Orchestrator] Step 2: Indexing {len(clauses)} clauses...")
+            print(f"[Orchestrator] Step 2: Indexing {len(clauses)} clauses...", flush=True)
             index_result = self.vector.index_contract(
                 contract_id=contract_id,
                 contract_name=contract_name,
@@ -104,16 +105,25 @@ class AgentOrchestrator:
             result['steps']['indexing'] = index_result
             
             # Step 3: Compare each clause with historical data
-            print(f"[Orchestrator] Step 3: Comparing clauses...")
+            print(f"[Orchestrator] Step 3: Comparing clauses...", flush=True)
             comparisons = []
             
             for i, clause in enumerate(clauses):
-                print(f"  Analyzing clause {i+1}/{len(clauses)}: {clause['type']}")
+                print(f"  Analyzing clause {i+1}/{len(clauses)}: {clause['type']}", flush=True)
                 
                 # Find similar clauses (exclude current contract)
+                # If knowledge_base_id is provided, filter by it using metadata.dataset_id or similar
+                # Based on vector_service mapping, we likely want to filter by contract_id or a broad dataset tag if we have it.
+                # Since indexing currently Uses contract_id, we'll implement filtering by KB ID in vector_service later if needed.
+                # For now, we pass it down.
+                filters = None
+                if knowledge_base_id:
+                    filters = {"contract_id": {"$ne": contract_id}} # Example filter logic
+                
                 similar = self.vector.search_similar_clauses(
                     query_text=clause['text'],
-                    top_k=5
+                    top_k=5,
+                    filters=filters
                 )
                 
                 # Filter out clauses from the same contract
@@ -149,7 +159,7 @@ class AgentOrchestrator:
             }
             
             # Step 4: Overall risk assessment
-            print(f"[Orchestrator] Step 4: Assessing overall risk...")
+            print(f"[Orchestrator] Step 4: Assessing overall risk...", flush=True)
             risk_assessment = self.risk.execute({
                 'comparisons': comparisons
             })
@@ -168,13 +178,19 @@ class AgentOrchestrator:
             result['summary'] = summary
             result['processing_time'] = round(time.time() - start_time, 2)
             
-            print(f"[Orchestrator] Analysis completed in {result['processing_time']}s")
+            print(f"[Orchestrator] Analysis completed in {result['processing_time']}s", flush=True)
             
             return result
         
         except Exception as e:
+            import traceback
+            error_trace = traceback.format_exc()
+            print(f"[Orchestrator] Error during analysis: {str(e)}", flush=True)
+            print(f"[Orchestrator] Traceback: {error_trace}", flush=True)
+            
             result['status'] = 'error'
             result['error'] = str(e)
+            result['traceback'] = error_trace
             result['processing_time'] = round(time.time() - start_time, 2)
             return result
     

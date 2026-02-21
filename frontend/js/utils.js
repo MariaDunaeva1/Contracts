@@ -5,11 +5,11 @@
 // Format time duration
 function formatTime(seconds) {
     if (!seconds || seconds < 0) return '0s';
-    
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60);
-    
+
     if (hours > 0) {
         return `${hours}h ${minutes}m`;
     } else if (minutes > 0) {
@@ -22,11 +22,11 @@ function formatTime(seconds) {
 // Format bytes to human readable
 function formatBytes(bytes) {
     if (!bytes || bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -39,12 +39,12 @@ function formatRelativeTime(date) {
     const diffMins = Math.floor(diffSecs / 60);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
-    
+
     if (diffSecs < 60) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    
+
     return then.toLocaleDateString();
 }
 
@@ -66,7 +66,7 @@ function getStatusBadge(status) {
         uploading: '<span class="badge badge-info">Uploading</span>',
         error: '<span class="badge badge-danger">Error</span>',
     };
-    
+
     return badges[status] || `<span class="badge badge-secondary">${status}</span>`;
 }
 
@@ -75,13 +75,13 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         toast.classList.add('show');
     }, 100);
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
@@ -117,29 +117,41 @@ function debounce(func, wait) {
     };
 }
 
+// Model complexity multipliers
+const MODEL_SPECS = {
+    'gpt2': { time: 0.1, vram: 0.5 },
+    'qwen-2.5-1.5b': { time: 0.3, vram: 1.5 },
+    'llama-3.2-1b': { time: 0.2, vram: 1.0 },
+    'llama-3.2-3b': { time: 0.5, vram: 3.0 },
+    'phi-3-mini': { time: 0.6, vram: 4.0 },
+    'mistral-7b-v0.3': { time: 1.0, vram: 7.0 },
+    'default': { time: 0.5, vram: 4.0 }
+};
+
 // Estimate training time based on configuration
 function estimateTrainingTime(config) {
-    const baseTime = 30; // 30 minutes base
+    const baseTime = 60 * 30; // 30 minutes base in seconds
+    const modelSpec = MODEL_SPECS[config.model] || MODEL_SPECS['default'];
+
     const epochMultiplier = config.epochs || 3;
     const rankMultiplier = (config.lora_rank || 16) / 16;
-    
-    const estimatedMinutes = baseTime * epochMultiplier * rankMultiplier;
-    return Math.round(estimatedMinutes * 60); // Return in seconds
+
+    return Math.round(baseTime * modelSpec.time * epochMultiplier * rankMultiplier);
 }
 
 // Estimate VRAM usage
 function estimateVRAM(config) {
-    const baseVRAM = 4; // 4GB base
+    const modelSpec = MODEL_SPECS[config.model] || MODEL_SPECS['default'];
     const rankMultiplier = (config.lora_rank || 16) / 16;
-    
-    return Math.round(baseVRAM * rankMultiplier);
+
+    return Math.round(modelSpec.vram * rankMultiplier * 2); // Factor for training overhead
 }
 
 // Parse metrics from job
 function parseMetrics(job) {
     try {
-        return typeof job.metrics === 'string' 
-            ? JSON.parse(job.metrics) 
+        return typeof job.metrics === 'string'
+            ? JSON.parse(job.metrics)
             : job.metrics || {};
     } catch (e) {
         return {};
@@ -160,15 +172,15 @@ function parseConfiguration(job) {
 // Calculate progress percentage
 function calculateProgress(job) {
     const metrics = parseMetrics(job);
-    
+
     if (job.status === 'completed') return 100;
     if (job.status === 'failed' || job.status === 'cancelled') return 0;
     if (job.status === 'pending') return 0;
-    
+
     if (metrics.epoch && metrics.total_epochs) {
         return Math.round((metrics.epoch / metrics.total_epochs) * 100);
     }
-    
+
     return 0;
 }
 
@@ -207,57 +219,85 @@ function downloadJSON(data, filename) {
 function validateDatasetFile(file) {
     const maxSize = 500 * 1024 * 1024; // 500MB
     const allowedTypes = ['application/json', 'text/plain'];
-    
+
     if (file.size > maxSize) {
         return { valid: false, error: 'File size exceeds 500MB limit' };
     }
-    
+
     if (!allowedTypes.includes(file.type) && !file.name.endsWith('.json') && !file.name.endsWith('.jsonl')) {
         return { valid: false, error: 'Only JSON and JSONL files are allowed' };
     }
-    
+
     return { valid: true };
 }
 
-// Parse dataset preview
+// Parse dataset preview efficiently without loading entire file into memory
 async function parseDatasetPreview(file, maxLines = 10) {
     return new Promise((resolve, reject) => {
+        // Safety check: Don't even try to preview files over 50MB to prevent browser freeze
+        if (file.size > 50 * 1024 * 1024) {
+            resolve({
+                format: file.name.endsWith('.jsonl') ? 'jsonl' : 'unknown',
+                total: 'Large file (>50MB)',
+                preview: [{ "info": "Preview disabled", "message": "File is too large to preview in browser. Safe to upload." }]
+            });
+            return;
+        }
+
+        // Only read the first 1MB to avoid freezing the browser on large files
+        const chunkSize = Math.min(1024 * 1024, file.size);
+        const chunk = file.slice(0, chunkSize);
+
         const reader = new FileReader();
-        
+
         reader.onload = (e) => {
             try {
                 const text = e.target.result;
                 const lines = text.split('\n').filter(line => line.trim());
-                
+
                 // Try to parse as JSON array
                 try {
-                    const data = JSON.parse(text);
-                    if (Array.isArray(data)) {
-                        resolve({
-                            format: 'json',
-                            total: data.length,
-                            preview: data.slice(0, maxLines),
-                        });
-                        return;
+                    // Try parsing the whole chunk if it's small, otherwise parsing might fail on cut JSON
+                    if (file.size <= chunkSize) {
+                        const data = JSON.parse(text);
+                        if (Array.isArray(data) || data.messages) {
+                            const arr = Array.isArray(data) ? data : data.messages;
+                            resolve({
+                                format: 'json',
+                                total: arr.length,
+                                preview: arr.slice(0, maxLines),
+                            });
+                            return;
+                        }
                     }
                 } catch (e) {
-                    // Not a JSON array, try JSONL
+                    // Not a complete JSON array or too large, fallback to line-by-line
                 }
-                
-                // Parse as JSONL
-                const preview = lines.slice(0, maxLines).map(line => JSON.parse(line));
+
+                // Parse as JSONL - only take complete lines (ignore last potentially cut line)
+                const previewLines = lines.length > 1 ? lines.slice(0, lines.length - 1) : lines;
+                const preview = [];
+
+                for (let i = 0; i < Math.min(maxLines, previewLines.length); i++) {
+                    try {
+                        preview.push(JSON.parse(previewLines[i]));
+                    } catch (err) {
+                        // Skip invalid JSON lines that might be cut
+                    }
+                }
+
                 resolve({
                     format: 'jsonl',
-                    total: lines.length,
+                    total: 'Unknown (large file)',
                     preview: preview,
                 });
             } catch (error) {
                 reject(new Error('Invalid JSON format'));
             }
         };
-        
-        reader.onerror = () => reject(new Error('Failed to read file'));
-        reader.readAsText(file);
+
+        reader.onerror = () => reject(new Error('Failed to read file segment'));
+        reader.readAsText(chunk);
     });
 }
 

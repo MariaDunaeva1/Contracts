@@ -75,56 +75,62 @@ func (w *WorkerPool) processJob(workerID int, jobID uint) {
 }
 
 func (w *WorkerPool) processJobKaggle(workerID int, job *models.Job) {
-	// 1. Download dataset from MinIO to temp file
-	tmpDir := fmt.Sprintf("/tmp/job_%d", job.ID)
-	os.MkdirAll(tmpDir, 0755)
-	defer os.RemoveAll(tmpDir)
+	kernelRef := job.KaggleKernelID
 
-	datasetFile := fmt.Sprintf("%s/dataset.json", tmpDir)
-	obj, err := storage.Client.GetObject(context.Background(), "datasets", job.Dataset.FilePath, minio.GetObjectOptions{})
-	if err != nil {
-		updateJobFailed(job, fmt.Sprintf("Failed to download dataset from MinIO: %v", err))
-		return
+	if kernelRef == "" {
+		// 1. Download dataset from MinIO to temp file
+		tmpDir := fmt.Sprintf("/tmp/job_%d", job.ID)
+		os.MkdirAll(tmpDir, 0755)
+		defer os.RemoveAll(tmpDir)
+
+		datasetFile := fmt.Sprintf("%s/dataset.json", tmpDir)
+		obj, err := storage.Client.GetObject(context.Background(), "datasets", job.Dataset.FilePath, minio.GetObjectOptions{})
+		if err != nil {
+			updateJobFailed(job, fmt.Sprintf("Failed to download dataset from MinIO: %v", err))
+			return
+		}
+
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(obj)
+		obj.Close()
+		if err := os.WriteFile(datasetFile, buf.Bytes(), 0644); err != nil {
+			updateJobFailed(job, fmt.Sprintf("Failed to write dataset: %v", err))
+			return
+		}
+		log.Printf("[Worker %d] Dataset downloaded to %s (%d bytes)", workerID, datasetFile, buf.Len())
+
+		// 2. Upload dataset to Kaggle
+		updateJobMetrics(job, map[string]interface{}{"stage": "uploading_dataset"})
+		datasetName := fmt.Sprintf("job-%d-dataset", job.ID)
+		datasetRef, err := w.KaggleService.CreateDataset(datasetName, datasetFile)
+		if err != nil {
+			updateJobFailed(job, fmt.Sprintf("Failed to upload dataset to Kaggle: %v", err))
+			return
+		}
+		log.Printf("[Worker %d] Dataset uploaded to Kaggle: %s", workerID, datasetRef)
+
+		// 3. Read notebook template and push kernel
+		updateJobStatus(job, "running")
+		updateJobMetrics(job, map[string]interface{}{"stage": "pushing_kernel", "kaggle_dataset": datasetRef})
+
+		notebookBytes, err := os.ReadFile("/app/templates/finetune-kernel.ipynb")
+		if err != nil {
+			updateJobFailed(job, fmt.Sprintf("Failed to read notebook template: %v", err))
+			return
+		}
+
+		kernelSlug := fmt.Sprintf("finetune-job-%d", job.ID)
+		kernelRef, err = w.KaggleService.PushKernel(kernelSlug, notebookBytes, []string{datasetRef})
+		if err != nil {
+			updateJobFailed(job, fmt.Sprintf("Failed to push kernel: %v", err))
+			return
+		}
+		job.KaggleKernelID = kernelRef
+		database.DB.Save(job)
+		log.Printf("[Worker %d] Kernel pushed: %s", workerID, kernelRef)
+	} else {
+		log.Printf("[Worker %d] Resuming job %d with existing kernel %s", workerID, job.ID, kernelRef)
 	}
-
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(obj)
-	obj.Close()
-	if err := os.WriteFile(datasetFile, buf.Bytes(), 0644); err != nil {
-		updateJobFailed(job, fmt.Sprintf("Failed to write dataset: %v", err))
-		return
-	}
-	log.Printf("[Worker %d] Dataset downloaded to %s (%d bytes)", workerID, datasetFile, buf.Len())
-
-	// 2. Upload dataset to Kaggle
-	updateJobMetrics(job, map[string]interface{}{"stage": "uploading_dataset"})
-	datasetName := fmt.Sprintf("job-%d-dataset", job.ID)
-	datasetRef, err := w.KaggleService.CreateDataset(datasetName, datasetFile)
-	if err != nil {
-		updateJobFailed(job, fmt.Sprintf("Failed to upload dataset to Kaggle: %v", err))
-		return
-	}
-	log.Printf("[Worker %d] Dataset uploaded to Kaggle: %s", workerID, datasetRef)
-
-	// 3. Read notebook template and push kernel
-	updateJobStatus(job, "running")
-	updateJobMetrics(job, map[string]interface{}{"stage": "pushing_kernel", "kaggle_dataset": datasetRef})
-
-	notebookBytes, err := os.ReadFile("/app/templates/finetune-kernel.ipynb")
-	if err != nil {
-		updateJobFailed(job, fmt.Sprintf("Failed to read notebook template: %v", err))
-		return
-	}
-
-	kernelSlug := fmt.Sprintf("finetune-job-%d", job.ID)
-	kernelRef, err := w.KaggleService.PushKernel(kernelSlug, notebookBytes, []string{datasetRef})
-	if err != nil {
-		updateJobFailed(job, fmt.Sprintf("Failed to push kernel: %v", err))
-		return
-	}
-	job.KaggleKernelID = kernelRef
-	database.DB.Save(job)
-	log.Printf("[Worker %d] Kernel pushed: %s", workerID, kernelRef)
 
 	// 4. Poll kernel status
 	updateJobMetrics(job, map[string]interface{}{"stage": "training", "kernel_ref": kernelRef})
@@ -141,6 +147,7 @@ func (w *WorkerPool) processJobKaggle(workerID int, job *models.Job) {
 			log.Printf("[Worker %d] Error polling status: %v", workerID, err)
 		}
 
+		// Don't log spam, just update
 		updateJobMetrics(job, map[string]interface{}{
 			"stage":         "training",
 			"kernel_status": status,
@@ -150,7 +157,7 @@ func (w *WorkerPool) processJobKaggle(workerID int, job *models.Job) {
 		if status == "completed" {
 			updateJobStatus(job, "completed")
 			log.Printf("[Worker %d] Job %d completed on Kaggle!", workerID, job.ID)
-			
+
 			// Create model record after successful completion
 			w.handleKernelComplete(job)
 			return
@@ -199,7 +206,7 @@ func (w *WorkerPool) processJobSimulated(workerID int, job *models.Job) {
 
 	updateJobStatus(job, "completed")
 	log.Printf("[Worker %d] Job %d completed (simulated)", workerID, job.ID)
-	
+
 	// Create model record after successful completion
 	w.handleKernelComplete(job)
 }
@@ -230,7 +237,7 @@ func (w *WorkerPool) handleKernelComplete(job *models.Job) {
 	// Parse job configuration to get base model
 	config := make(map[string]interface{})
 	json.Unmarshal([]byte(job.Configuration), &config)
-	
+
 	baseModel := "llama-3.2-3b"
 	if bm, ok := config["base_model"].(string); ok && bm != "" {
 		baseModel = bm
@@ -240,7 +247,7 @@ func (w *WorkerPool) handleKernelComplete(job *models.Job) {
 	ctx := context.Background()
 	metricsPath := fmt.Sprintf("%d/metrics.json", job.ID)
 	var trainingMetrics map[string]interface{}
-	
+
 	obj, err := storage.Client.GetObject(ctx, "models", metricsPath, minio.GetObjectOptions{})
 	if err == nil {
 		data, err := io.ReadAll(obj)

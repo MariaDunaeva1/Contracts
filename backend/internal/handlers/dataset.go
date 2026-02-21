@@ -12,12 +12,14 @@ import (
 	"time"
 
 	"finetune-studio/internal/database"
+	"finetune-studio/internal/logger"
 	"finetune-studio/internal/models"
 	"finetune-studio/internal/storage"
 	"finetune-studio/internal/validator"
 
 	"github.com/gin-gonic/gin"
 	"github.com/minio/minio-go/v7"
+	"go.uber.org/zap"
 	"gorm.io/datatypes"
 )
 
@@ -46,13 +48,16 @@ func UploadDataset(c *gin.Context) {
 
 	// 3. Validate
 	ext := filepath.Ext(header.Filename)
-	if ext != ".json" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Only .json files are supported currently"})
+	if ext != ".json" && ext != ".jsonl" {
+		logger.Warn("Unsupported file extension", zap.String("ext", ext))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Only .json and .jsonl files are supported currently"})
 		return
 	}
 
+	logger.Info("Validating dataset", zap.String("filename", header.Filename), zap.Int("size", len(content)))
 	validationResult := validator.ValidateDataset(content, "json")
 	if !validationResult.Valid {
+		logger.Warn("Dataset validation failed", zap.Any("errors", validationResult.Errors))
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Validation failed",
 			"details": validationResult,
@@ -63,17 +68,20 @@ func UploadDataset(c *gin.Context) {
 	// 4. Upload to MinIO
 	objectName := fmt.Sprintf("%d_%s", time.Now().Unix(), header.Filename)
 	contentType := "application/json"
-	ctx := context.Background()
+	ctx := c.Request.Context()
 
+	logger.Info("Uploading to MinIO", zap.String("object", objectName))
 	_, err = storage.Client.PutObject(ctx, "datasets", objectName, bytes.NewReader(content), int64(len(content)), minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {
+		logger.Error("Failed to upload to storage", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to storage", "details": err.Error()})
 		return
 	}
 
 	// 5. Save to DB
+	logger.Info("Saving dataset metadata to DB", zap.String("name", name))
 	validationJSON, _ := json.Marshal(validationResult)
 	dataset := models.Dataset{
 		Name:              name,
@@ -91,10 +99,12 @@ func UploadDataset(c *gin.Context) {
 	}
 
 	if err := database.DB.Create(&dataset).Error; err != nil {
+		logger.Error("Failed to save dataset to DB", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save metadata"})
 		return
 	}
 
+	logger.Info("Dataset uploaded successfully", zap.Uint("id", dataset.ID))
 	c.JSON(http.StatusCreated, dataset)
 }
 

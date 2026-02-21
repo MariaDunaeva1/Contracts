@@ -27,9 +27,11 @@ func NewContractHandler(pythonURL string) *ContractHandler {
 
 // AnalyzeContractRequest represents the request to analyze a contract
 type AnalyzeContractRequest struct {
-	ContractText string `json:"contract_text" binding:"required"`
-	ContractName string `json:"contract_name"`
-	ContractID   string `json:"contract_id"`
+	ContractText    string `json:"contract_text" binding:"required"`
+	ContractName    string `json:"contract_name"`
+	ContractID      string `json:"contract_id"`
+	KnowledgeBaseID string `json:"knowledge_base_id"`
+	UseFinetuned    bool   `json:"use_finetuned"`
 }
 
 // SearchClausesRequest represents a semantic search request
@@ -55,6 +57,7 @@ func (h *ContractHandler) AnalyzeContract(c *gin.Context) {
 	}
 
 	// Call Python RAG service
+	// We pass the entire request which now includes KnowledgeBaseID and UseFinetuned
 	result, err := h.callPythonService("/analyze", req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

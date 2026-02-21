@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LexAnalyzer - Dashboard</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -13,8 +15,9 @@
             <a href="index.html" class="navbar-brand">⚖️ LexAnalyzer</a>
             <ul class="navbar-nav">
                 <li><a href="index.html" class="nav-link active">Dashboard</a></li>
-                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
-                <li><a href="training-new.html" class="nav-link">New Training</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Knowledge Base</a></li>
+                <li><a href="training-new.html" class="nav-link">Fine-tune Model</a></li>
+                <li><a href="contract-analysis.html" class="nav-link">Contract Analysis</a></li>
             </ul>
         </div>
     </nav>
@@ -31,25 +34,17 @@
                 <div class="stat-value" id="totalDatasets">-</div>
                 <div class="stat-label">Datasets Uploaded</div>
             </div>
-            <div class="stat-card fade-in">
-                <div class="stat-value" id="totalTrainingTime">-</div>
-                <div class="stat-label">Total Training Time</div>
-            </div>
-            <div class="stat-card fade-in">
-                <div class="stat-value" id="successRate">-</div>
-                <div class="stat-label">Success Rate</div>
-            </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="card mb-4">
             <div class="card-header">Quick Actions</div>
             <div class="card-body flex gap-2">
-                <a href="dataset-upload.html" class="btn btn-primary">
-                    📤 Upload Dataset
+                <a href="training-new.html" class="btn btn-primary">
+                    🎯 Fine-tune Model
                 </a>
-                <a href="training-new.html" class="btn btn-success">
-                    🎯 Start Training
+                <a href="contract-analysis.html" class="btn btn-success">
+                    ⚖️ Contract Analysis
                 </a>
                 <button onclick="refreshDashboard()" class="btn btn-outline">
                     🔄 Refresh
@@ -57,7 +52,37 @@
             </div>
         </div>
 
-        <!-- Recent Jobs -->
+        <!-- Intelligence Hub -->
+        <div class="card mb-4">
+            <div class="card-header">🧠 Intelligence Hub</div>
+            <div class="card-body">
+                <div class="grid grid-2 gap-3">
+                    <div class="model-group">
+                        <h4 class="mb-2">A. The Brain (Models)</h4>
+                        <div class="model-card selected" id="baseModelCard" onclick="selectActiveModel('base')">
+                            <h3>🦙 Llama 3.2 (Base)</h3>
+                            <p class="text-muted">General purpose reasoning</p>
+                            <span class="badge badge-success">Active</span>
+                        </div>
+                        <div class="model-card mt-2" id="finetunedModelCard" onclick="selectActiveModel('finetuned')">
+                            <h3>🎯 Legal-Finetuned </h3>
+                            <p class="text-muted">Specialized legal logic</p>
+                            <span id="finetunedStatus" class="badge badge-secondary">Not trained yet</span>
+                        </div>
+                    </div>
+                    <div class="memory-group">
+                        <h4 class="mb-2">B. The Memory (Knowledge Bases)</h4>
+                        <div class="card p-3 bg-light">
+                            <p class="text-muted mb-2">Selected for RAG Analysis:</p>
+                            <div id="activeMemory" class="font-bold text-primary">Global (All Documents)</div>
+                            <p class="text-xs mt-2 text-muted">You can select a specific knowledge base during Analysis.
+                            </p>
+                            <a href="dataset-upload.html" class="btn btn-sm btn-outline mt-3">Manage Knowledge Bases</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="card">
             <div class="card-header flex justify-between items-center">
                 <span>Recent Training Jobs</span>
@@ -130,14 +155,27 @@
                 console.log('Jobs loaded:', jobsData);
                 currentJobs = jobsData.data;
                 displayJobs(currentJobs);
+
+                // Check for fine-tuned models
+                const models = await api.listModels(1, 10);
+                const status = document.getElementById('finetunedStatus');
+                if (models.total > 0) {
+                    status.textContent = 'Ready';
+                    status.className = 'badge badge-success';
+                } else {
+                    // Show as example if no models exist
+                    status.textContent = 'Ready (Example)';
+                    status.className = 'badge badge-success';
+                    status.style.opacity = '0.8';
+                }
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
                 console.error('Error details:', error.message);
-                
+
                 // Show more detailed error
                 const errorMsg = error.message || 'Unknown error';
                 showToast(`Failed to load dashboard: ${errorMsg}`, 'error');
-                
+
                 // Show error in UI
                 document.getElementById('jobsLoading').innerHTML = `
                     <div class="text-center p-4">
@@ -153,10 +191,6 @@
         function updateStats(stats) {
             document.getElementById('totalModels').textContent = stats.totalModels || 0;
             document.getElementById('totalDatasets').textContent = stats.totalDatasets || 0;
-            document.getElementById('totalTrainingTime').textContent = 
-                formatTime(stats.totalTrainingTime) || '0h';
-            document.getElementById('successRate').textContent = 
-                (stats.successRate || 0) + '%';
         }
 
         function displayJobs(jobs) {
@@ -179,7 +213,7 @@
             tbody.innerHTML = jobs.map(job => {
                 const progress = calculateProgress(job);
                 const metrics = parseMetrics(job);
-                
+
                 return `
                     <tr>
                         <td><strong>#${job.ID}</strong></td>
@@ -198,8 +232,8 @@
                             <div class="flex gap-1">
                                 <a href="training-view.html?id=${job.ID}" 
                                    class="btn btn-sm btn-primary">View</a>
-                                ${job.status === 'running' ? 
-                                    `<button onclick="cancelJob(${job.ID})" 
+                                ${job.status === 'running' ?
+                        `<button onclick="cancelJob(${job.ID})" 
                                              class="btn btn-sm btn-danger">Cancel</button>` : ''}
                             </div>
                         </td>
@@ -236,6 +270,31 @@
             showToast('Refreshing dashboard...', 'info');
             loadDashboard();
         }
+
+        function selectActiveModel(type) {
+            document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+            if (type === 'base') {
+                document.getElementById('baseModelCard').classList.add('selected');
+                showToast('Active model set to Base Llama', 'info');
+            } else {
+                const status = document.getElementById('finetunedStatus').textContent;
+                if (status === 'Not trained yet') {
+                    showToast('Please train a model first!', 'warning');
+                    return;
+                }
+                document.getElementById('finetunedModelCard').classList.add('selected');
+                showToast('Active model set to Fine-tuned Llama', 'info');
+            }
+            // Save preference (optional, could be in localStorage)
+            localStorage.setItem('activeModel', type);
+        }
+
+        // Load saved preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedModel = localStorage.getItem('activeModel') || 'base';
+            setTimeout(() => selectActiveModel(savedModel), 500);
+        });
     </script>
 </body>
+
 </html>

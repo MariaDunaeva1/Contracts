@@ -43,6 +43,7 @@ class AnalyzeRequest(BaseModel):
     contract_text: str = Field(..., description="Full contract text")
     contract_name: str = Field(default="New Contract", description="Contract name")
     contract_id: Optional[str] = Field(default=None, description="Optional contract ID")
+    knowledge_base_id: Optional[str] = Field(default=None, description="Optional Knowledge Base/Dataset ID for RAG filtering")
     use_finetuned: bool = Field(default=True, description="Use fine-tuned model (True) or base model (False)")
 
 class SearchRequest(BaseModel):
@@ -82,13 +83,14 @@ async def analyze_contract(req: AnalyzeRequest):
     4. Provides risk assessment
     """
     try:
-        print(f"[API] Analyzing contract: {req.contract_name} (Fine-tuned: {req.use_finetuned})")
+        print(f"[API] Analyzing contract: {req.contract_name} (Fine-tuned: {req.use_finetuned})", flush=True)
         
         result = orchestrator.analyze_contract(
             contract_text=req.contract_text,
             contract_name=req.contract_name,
             contract_id=req.contract_id,
-            use_finetuned=req.use_finetuned
+            use_finetuned=req.use_finetuned,
+            knowledge_base_id=req.knowledge_base_id
         )
         
         if result.get('status') == 'error':
@@ -97,7 +99,7 @@ async def analyze_contract(req: AnalyzeRequest):
         return result
     
     except Exception as e:
-        print(f"[API] Error: {str(e)}")
+        print(f"[API] Error: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Semantic search endpoint
@@ -121,7 +123,7 @@ async def search_clauses(req: SearchRequest):
         return results
     
     except Exception as e:
-        print(f"[API] Error: {str(e)}")
+        print(f"[API] Error: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Index contract endpoint
@@ -147,7 +149,7 @@ async def index_contract(req: IndexRequest):
         return result
     
     except Exception as e:
-        print(f"[API] Error: {str(e)}")
+        print(f"[API] Error: {str(e)}", flush=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 # Get contract clauses

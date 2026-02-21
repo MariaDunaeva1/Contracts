@@ -8,6 +8,7 @@ import (
 	"finetune-studio/internal/logger"
 	"finetune-studio/internal/metrics"
 	"finetune-studio/internal/middleware"
+	"finetune-studio/internal/models"
 	"finetune-studio/internal/services/kaggle"
 	"finetune-studio/internal/services/logs"
 	"finetune-studio/internal/storage"
@@ -30,7 +31,9 @@ var Version = "1.0.0"
 
 func main() {
 	// 1. Initialize logger
-	if err := logger.Initialize(); err != nil {
+	logLevel := getEnv("LOG_LEVEL", "info")
+	logFormat := getEnv("LOG_FORMAT", "console")
+	if err := logger.Initialize(logLevel, logFormat); err != nil {
 		panic("Failed to initialize logger: " + err.Error())
 	}
 	defer logger.Sync()
@@ -41,25 +44,28 @@ func main() {
 	)
 
 	// 2. Load configuration
-	cfg := config.LoadConfig()
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		logger.Fatal("Failed to load config", zap.Error(err))
+	}
 
 	// 3. Connect to Database
 	database.Connect(cfg.DatabaseURL)
-	
+
 	// Configure connection pool
 	sqlDB, err := database.DB.DB()
 	if err != nil {
 		logger.Fatal("Failed to get database connection", zap.Error(err))
 	}
-	
+
 	maxConns := getEnvInt("DB_MAX_CONNECTIONS", 25)
 	maxIdleConns := getEnvInt("DB_MAX_IDLE_CONNECTIONS", 5)
 	connLifetime := getEnvDuration("DB_CONNECTION_MAX_LIFETIME", 5*time.Minute)
-	
+
 	sqlDB.SetMaxOpenConns(maxConns)
 	sqlDB.SetMaxIdleConns(maxIdleConns)
 	sqlDB.SetConnMaxLifetime(connLifetime)
-	
+
 	logger.Info("Database connection pool configured",
 		zap.Int("max_connections", maxConns),
 		zap.Int("max_idle", maxIdleConns),
@@ -78,14 +84,17 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 
+	// Set MaxMultipartMemory to match our configured limit (default is 32MB)
+	maxSizeMB := getEnvInt("MAX_REQUEST_SIZE_MB", 10)
+	r.MaxMultipartMemory = int64(maxSizeMB) << 20
+
 	// 7. Apply middleware
 	// Compression
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
-	
+
 	// Request size limit
-	maxSizeMB := getEnvInt("MAX_REQUEST_SIZE_MB", 10)
 	r.Use(middleware.RequestSizeLimit(maxSizeMB))
-	
+
 	// CORS
 	allowedOrigins := strings.Split(getEnv("ALLOWED_ORIGINS", "*"), ",")
 	corsConfig := cors.Config{
@@ -97,15 +106,16 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}
 	r.Use(cors.New(corsConfig))
-	
+
 	// Logging
-	r.Use(middleware.RequestLogger(logger.Log))
-	
+	r.Use(middleware.RequestLogger())
+
 	// Metrics (if enabled)
 	if getEnv("METRICS_ENABLED", "true") == "true" {
-		r.Use(metrics.PrometheusMiddleware())
+		metrics.Initialize()
+		r.Use(metrics.MetricsMiddleware())
 	}
-	
+
 	// Rate limiting
 	rateLimitRPM := getEnvInt("RATE_LIMIT_REQUESTS_PER_MINUTE", 100)
 	r.Use(middleware.RateLimitMiddleware(rateLimitRPM))
@@ -152,8 +162,7 @@ func main() {
 		// Update DB metrics
 		if sqlDB != nil {
 			stats := sqlDB.Stats()
-			metrics.SetDBConnectionsActive(stats.InUse)
-			metrics.SetDBConnectionsIdle(stats.Idle)
+			metrics.UpdateDBMetrics(stats.InUse, stats.Idle)
 		}
 
 		c.JSON(statusCode, gin.H{
@@ -178,22 +187,33 @@ func main() {
 
 	// Metrics endpoint
 	if getEnv("METRICS_ENABLED", "true") == "true" {
-		r.GET("/api/v1/metrics", metrics.Handler())
+		r.GET("/api/v1/metrics", metrics.PrometheusHandler())
 	}
 
 	// 9. Initialize services
 	kaggleSvc := kaggle.NewService("/tmp/kaggle_workdir")
-	
+
 	workerPoolSize := getEnvInt("WORKER_POOL_SIZE", 5)
 	worker.Pool = worker.NewWorkerPool(workerPoolSize, kaggleSvc)
 	worker.Pool.Start()
-	
+
+	// Resume incomplete jobs
+	go func() {
+		var incompleteJobs []models.Job
+		if err := database.DB.Where("status IN ?", []string{"pending", "starting", "running"}).Find(&incompleteJobs).Error; err == nil {
+			for _, j := range incompleteJobs {
+				logger.Info("Resuming incomplete job", zap.Uint("job_id", j.ID), zap.String("status", j.Status))
+				worker.Pool.JobQueue <- j.ID
+			}
+		}
+	}()
+
 	logService := logs.NewLogService(storage.Client)
 	logHandler := handlers.NewLogHandler(logService)
-	
+
 	modelStorage := storage.NewModelStorage(storage.Client)
 	modelHandler := handlers.NewModelHandler(modelStorage)
-	
+
 	evaluationHandler := handlers.NewEvaluationHandler()
 
 	logger.Info("Services initialized",
@@ -202,7 +222,7 @@ func main() {
 
 	// 10. Setup routes
 	v1 := r.Group("/api/v1")
-	
+
 	// Rate limit for expensive endpoints
 	expensiveRateLimit := getEnvInt("RATE_LIMIT_EXPENSIVE_ENDPOINTS", 10)
 	expensiveLimiter := middleware.ExpensiveEndpointRateLimit(expensiveRateLimit)
@@ -248,7 +268,8 @@ func main() {
 	}
 
 	// Contract Analysis Routes (RAG)
-	contractHandler := handlers.NewContractHandler("http://localhost:8001")
+	ragURL := getEnv("RAG_SERVICE_URL", "http://localhost:8001")
+	contractHandler := handlers.NewContractHandler(ragURL)
 	{
 		v1.POST("/contracts/analyze", expensiveLimiter, contractHandler.AnalyzeContract)
 		v1.POST("/clauses/search", contractHandler.SearchClauses)
@@ -264,9 +285,9 @@ func main() {
 	srv := &http.Server{
 		Addr:         ":" + port,
 		Handler:      r,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		ReadTimeout:  60 * time.Second,
+		WriteTimeout: 300 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	// Start server in goroutine
@@ -289,7 +310,7 @@ func main() {
 
 	// Stop accepting new jobs
 	if worker.Pool != nil {
-		worker.Pool.Stop()
+		close(worker.Pool.JobQueue)
 		logger.Info("Worker pool stopped")
 	}
 

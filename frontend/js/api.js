@@ -24,10 +24,12 @@ class API {
 
         try {
             const response = await fetch(url, config);
-            
+
             if (!response.ok) {
                 const error = await response.json().catch(() => ({ error: response.statusText }));
-                throw new Error(error.error || `HTTP ${response.status}`);
+                const errorMessage = error.error || `HTTP ${response.status}`;
+                const details = error.details ? `\nDetails: ${error.details}` : '';
+                throw new Error(errorMessage + details);
             }
 
             // Handle empty responses
@@ -35,7 +37,7 @@ class API {
             if (contentType && contentType.includes('application/json')) {
                 return await response.json();
             }
-            
+
             return response;
         } catch (error) {
             console.error('API request failed:', error);
@@ -62,7 +64,8 @@ class API {
         });
 
         if (!response.ok) {
-            throw new Error(`Upload failed: ${response.statusText}`);
+            const error = await response.json().catch(() => ({ error: response.statusText }));
+            throw new Error(error.error || error.details?.errors?.join(', ') || `Upload failed: ${response.statusText}`);
         }
 
         return response.json();
@@ -195,6 +198,30 @@ class API {
         });
     }
 
+    // ========== CONTRACTS / RAG ==========
+
+    async analyzeContract(contractData) {
+        return this.request('/contracts/analyze', {
+            method: 'POST',
+            body: JSON.stringify(contractData),
+        });
+    }
+
+    async searchClauses(query, kbId = null, topK = 5) {
+        return this.request('/clauses/search', {
+            method: 'POST',
+            body: JSON.stringify({
+                query,
+                knowledge_base_id: kbId,
+                top_k: topK,
+            }),
+        });
+    }
+
+    async getRAGHealth() {
+        return this.request('/rag/health');
+    }
+
     // ========== STATS ==========
 
     async getStats() {
@@ -212,7 +239,7 @@ class API {
                 return acc + (metrics.training_time || 0);
             }, 0);
 
-            const successRate = jobs.total > 0 
+            const successRate = jobs.total > 0
                 ? (completedJobs.length / jobs.total * 100).toFixed(1)
                 : 0;
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             justify-content: space-between;
             margin-bottom: 2rem;
         }
+
         .step {
             flex: 1;
             text-align: center;
@@ -19,20 +21,25 @@
             color: #999;
             font-weight: 600;
         }
+
         .step.active {
             border-bottom-color: var(--primary);
             color: var(--primary);
         }
+
         .step.completed {
             border-bottom-color: var(--success);
             color: var(--success);
         }
+
         .step-content {
             display: none;
         }
+
         .step-content.active {
             display: block;
         }
+
         .model-card {
             border: 2px solid #ddd;
             border-radius: 8px;
@@ -40,20 +47,25 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .model-card:hover {
             border-color: var(--primary);
             box-shadow: 0 4px 12px var(--shadow);
         }
+
         .model-card.selected {
             border-color: var(--primary);
             background: rgba(0, 102, 204, 0.05);
         }
+
         .slider-container {
             margin: 1rem 0;
         }
+
         .slider {
             width: 100%;
         }
+
         .slider-value {
             display: inline-block;
             min-width: 60px;
@@ -63,6 +75,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -70,8 +83,9 @@
             <a href="index.html" class="navbar-brand">⚖️ LexAnalyzer</a>
             <ul class="navbar-nav">
                 <li><a href="index.html" class="nav-link">Dashboard</a></li>
-                <li><a href="dataset-upload.html" class="nav-link">Upload Dataset</a></li>
-                <li><a href="training-new.html" class="nav-link active">New Training</a></li>
+                <li><a href="dataset-upload.html" class="nav-link">Knowledge Base</a></li>
+                <li><a href="training-new.html" class="nav-link active">Fine-tune Model</a></li>
+                <li><a href="contract-analysis.html" class="nav-link">Contract Analysis</a></li>
             </ul>
         </div>
     </nav>
@@ -105,7 +119,7 @@
                         <div class="spinner"></div>
                         <p class="mt-2 text-muted">Loading datasets...</p>
                     </div>
-                    
+
                     <div id="datasetsContainer" class="hidden">
                         <div class="form-group">
                             <label class="form-label">Choose a dataset:</label>
@@ -113,7 +127,7 @@
                                 <option value="">-- Select Dataset --</option>
                             </select>
                         </div>
-                        
+
                         <div id="datasetInfo" class="hidden mt-3 p-3 bg-light rounded">
                             <h4>Dataset Information</h4>
                             <p><strong>Name:</strong> <span id="datasetName"></span></p>
@@ -125,7 +139,8 @@
 
                     <div id="datasetsEmpty" class="hidden text-center p-4">
                         <p class="text-muted">No datasets found.</p>
-                        <a href="dataset-upload.html" class="btn btn-primary mt-2">Upload Dataset</a>
+                        <a href="dataset-upload.html?redirect=training-new.html" class="btn btn-primary mt-2">Upload
+                            Dataset</a>
                     </div>
                 </div>
                 <div class="card-footer flex justify-between">
@@ -143,23 +158,42 @@
                 <div class="card-header">Step 2: Select Base Model</div>
                 <div class="card-body">
                     <div class="grid grid-3 gap-3">
-                        <div class="model-card" onclick="selectModel('llama-3.2-1b')">
+                        <div class="model-card" onclick="selectModel('llama-3.2-1b', this)">
                             <h3>🦙 Llama 3.2 1B</h3>
-                            <p class="text-muted">Lightweight, fast training</p>
-                            <p><strong>VRAM:</strong> ~4GB</p>
-                            <p><strong>Speed:</strong> Fast</p>
+                            <p class="text-muted">Edge-capable, extremely fast</p>
+                            <p><strong>VRAM:</strong> ~2GB</p>
+                            <p><strong>Speed:</strong> Instant</p>
                         </div>
-                        <div class="model-card" onclick="selectModel('llama-3.2-3b')">
+                        <div class="model-card" onclick="selectModel('qwen-2.5-1.5b', this)">
+                            <h3>🔴 Qwen 2.5 1.5B</h3>
+                            <p class="text-muted">Best-in-class small model</p>
+                            <p><strong>VRAM:</strong> ~3GB</p>
+                            <p><strong>Speed:</strong> Very Fast</p>
+                        </div>
+                        <div class="model-card" onclick="selectModel('llama-3.2-3b', this)">
                             <h3>🦙 Llama 3.2 3B</h3>
-                            <p class="text-muted">Balanced performance</p>
+                            <p class="text-muted">Balanced for mobile/edge</p>
+                            <p><strong>VRAM:</strong> ~6GB</p>
+                            <p><strong>Speed:</strong> Medium</p>
+                        </div>
+                        <div class="model-card" onclick="selectModel('phi-3-mini', this)">
+                            <h3>💎 Phi-3 Mini (3.8B)</h3>
+                            <p class="text-muted">Microsoft's efficiency leader</p>
                             <p><strong>VRAM:</strong> ~8GB</p>
                             <p><strong>Speed:</strong> Medium</p>
                         </div>
-                        <div class="model-card" onclick="selectModel('llama-3.1-8b')">
-                            <h3>🦙 Llama 3.1 8B</h3>
-                            <p class="text-muted">High quality results</p>
-                            <p><strong>VRAM:</strong> ~16GB</p>
+                        <div class="model-card" onclick="selectModel('mistral-7b-v0.3', this)">
+                            <h3>🌪️ Mistral 7B v0.3</h3>
+                            <p class="text-muted">Production classic</p>
+                            <p><strong>VRAM:</strong> ~14GB</p>
                             <p><strong>Speed:</strong> Slow</p>
+                        </div>
+                        <div class="model-card" onclick="selectModel('gpt2', this)">
+                            <h3>📜 GPT-2 (124M)</h3>
+                            <p class="text-muted">For testing & legacy research</p>
+                            <p><strong>VRAM:</strong>
+                                <1GB< /p>
+                                    <p><strong>Speed:</strong> Turbo</p>
                         </div>
                     </div>
                 </div>
@@ -182,9 +216,8 @@
                         <label class="form-label">
                             LoRA Rank: <span class="slider-value" id="rankValue">16</span>
                         </label>
-                        <input type="range" id="loraRank" class="slider" 
-                               min="8" max="32" step="8" value="16" 
-                               oninput="updateSlider('rank', this.value)">
+                        <input type="range" id="loraRank" class="slider" min="8" max="32" step="8" value="16"
+                            oninput="updateSlider('rank', this.value)">
                         <p class="text-muted">Higher rank = better quality but slower training</p>
                     </div>
 
@@ -193,9 +226,8 @@
                         <label class="form-label">
                             Epochs: <span class="slider-value" id="epochsValue">3</span>
                         </label>
-                        <input type="range" id="epochs" class="slider" 
-                               min="1" max="5" step="1" value="3" 
-                               oninput="updateSlider('epochs', this.value)">
+                        <input type="range" id="epochs" class="slider" min="1" max="5" step="1" value="3"
+                            oninput="updateSlider('epochs', this.value)">
                         <p class="text-muted">More epochs = better learning but longer training</p>
                     </div>
 
@@ -238,8 +270,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/utils.js"></script>
-    <script src="js/api.js"></script>
+    <script src="js/utils.js?v=3"></script>
+    <script src="js/api.js?v=3"></script>
     <script>
         let currentStep = 1;
         let selectedDataset = null;
@@ -256,7 +288,7 @@
         async function loadDatasets() {
             try {
                 const data = await api.listDatasets(1, 100);
-                
+
                 if (data.data.length === 0) {
                     document.getElementById('datasetsLoading').classList.add('hidden');
                     document.getElementById('datasetsEmpty').classList.remove('hidden');
@@ -274,6 +306,14 @@
 
                 document.getElementById('datasetsLoading').classList.add('hidden');
                 document.getElementById('datasetsContainer').classList.remove('hidden');
+
+                // Auto-select if last_uploaded is present in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const lastUploaded = urlParams.get('last_uploaded');
+                if (lastUploaded) {
+                    select.value = lastUploaded;
+                    select.dispatchEvent(new Event('change'));
+                }
 
                 select.addEventListener('change', (e) => {
                     if (e.target.value) {
@@ -301,15 +341,15 @@
             document.getElementById('datasetInfo').classList.remove('hidden');
         }
 
-        function selectModel(model) {
+        function selectModel(model, element) {
             selectedModel = model;
-            
+
             // Update UI
             document.querySelectorAll('.model-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            event.currentTarget.classList.add('selected');
-            
+            element.classList.add('selected');
+
             document.getElementById('step2Next').disabled = false;
             updateEstimation();
         }
@@ -322,10 +362,10 @@
 
         function updateEstimation() {
             config.learning_rate = parseFloat(document.getElementById('learningRate').value);
-            
+
             const time = estimateTrainingTime(config);
             const vram = estimateVRAM(config);
-            
+
             document.getElementById('estimatedTime').textContent = '~' + formatTime(time);
             document.getElementById('estimatedVRAM').textContent = '~' + vram + 'GB';
         }
@@ -336,7 +376,7 @@
                 document.getElementById('step' + currentStep).classList.remove('active');
                 document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
                 document.getElementById('step' + currentStep + 'Indicator').classList.add('completed');
-                
+
                 // Show next step
                 currentStep++;
                 document.getElementById('step' + currentStep).classList.add('active');
@@ -349,7 +389,7 @@
                 // Hide current step
                 document.getElementById('step' + currentStep).classList.remove('active');
                 document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
-                
+
                 // Show previous step
                 currentStep--;
                 document.getElementById('step' + currentStep).classList.add('active');
@@ -377,9 +417,9 @@
                 };
 
                 const job = await api.createJob(selectedDataset.ID, jobConfig);
-                
+
                 showToast('Training job created successfully!', 'success');
-                
+
                 // Redirect to training view
                 setTimeout(() => {
                     window.location.href = 'training-view.html?id=' + job.ID;
@@ -393,4 +433,5 @@
         }
     </script>
 </body>
+
 </html>
