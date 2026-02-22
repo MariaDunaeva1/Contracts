@@ -1,234 +1,95 @@
 # ⚖️ LexAnalyzer - Sistema de Análisis de Contratos Legales
 
-Sistema completo para análisis inteligente de contratos usando LLM fine-tuneado + RAG + Agentes especializados.
+Sistema completo para análisis inteligente de contratos legales usando grandes modelos de lenguaje (LLMs), Generación Aumentada por Recuperación (RAG) y Agentes especializados.
 
 ## 🎯 ¿Qué hace este sistema?
 
-Analiza contratos legales automáticamente y extrae:
+Analiza contratos legales automáticamente y extrae de forma estructurada:
 - ✅ Cláusulas principales
-- ⚠️ Riesgos legales
+- ⚠️ Riesgos legales y penalizaciones
 - 📊 Obligaciones de las partes
 - 🔍 Comparación con contratos estándar
-- 💡 Recomendaciones
+- 💡 Recomendaciones de negociación
 
 ## 🧠 Arquitectura
 
+```text
+Usuario → Frontend (Web) → Backend (Go) → RAG Service (Python/FastAPI) → Groq / Ollama (LLM)
+                                                   ↓
+                                         ChromaDB (Vector Store)
+                                                   ↓
+                                        4 Agentes Especializados
 ```
-Usuario → Frontend → Backend Go → RAG Service Python → Ollama (Modelo Fine-tuned)
-                                        ↓
-                                  ChromaDB (Vector Store)
-                                        ↓
-                                  4 Agentes Especializados
-```
+
+El sistema ahora incluye una **Base de Conocimiento (Knowledge Base)** que soporta la ingesta nativa de múltiples formatos de documentos legales para enriquecer el contexto del análisis: `.pdf`, `.docx`, `.txt`, `.csv`, `.md` y `.json/.jsonl`.
 
 ## ⚡ Quick Start
 
-### Prerequisitos
+Asegúrate de tener Docker y Docker Compose instalados.
 
-- **Ollama** instalado y corriendo (https://ollama.ai)
-- **Docker** y Docker Compose
-- **Python 3.9+**
+1. **Configurar API (Importante)**
+   Crea un archivo `.env` en la raíz del proyecto y añade tu API Key de Groq (el proveedor recomendado por su extrema velocidad y gratuidad):
+   ```env
+   GROQ_API_KEY=tu_api_key_aqui
+   LLM_PROVIDER=groq
+   ```
 
-### Paso 1: Cargar Modelo Fine-Tuneado
+2. **Lanzar todo el ecosistema**
+   Todos los microservicios están orquestados; basta con un solo comando:
+   ```bash
+   docker-compose up --build
+   ```
+   *(Nota: La primera vez tardará varios minutos en descargar los modelos de embeddings de Python).*
 
-El proyecto incluye un modelo **ya entrenado** especializado en contratos legales:
-
-```bash
-# Cargar el modelo en Ollama (solo una vez)
-load-finetuned-model.bat
-```
-
-Esto crea `legal-contract-analyzer` usando los adaptadores LoRA en `models/lora_model/`.
-
-### Paso 2: Iniciar Servicios
-
-```bash
-# Terminal 1: Backend + Frontend + Base de datos
-docker-compose up --build
-
-# Terminal 2: RAG Service
-start-rag-system.bat
-```
-
-### Paso 3: Analizar Contratos
-
-Abre http://localhost:3000/contract-analysis.html
-
-## 📁 Estructura del Proyecto
-
-```
-contracts/
-├── backend/                    # API Go
-│   ├── cmd/server/            # Entry point
-│   ├── internal/              # Lógica de negocio
-│   │   ├── handlers/          # HTTP handlers
-│   │   ├── services/          # Servicios (Kaggle, logs)
-│   │   └── storage/           # MinIO storage
-│   └── services/              # RAG Service Python
-│       ├── agents/            # 4 agentes especializados
-│       ├── llm_service.py     # Cliente Ollama
-│       ├── rag_service.py     # Orquestador RAG
-│       └── vector_service.py  # ChromaDB
-├── frontend/                   # UI HTML/JS
-│   ├── contract-analysis.html # Interfaz principal
-│   └── js/                    # Lógica frontend
-├── models/
-│   └── lora_model/            # Modelo fine-tuneado (YA ENTRENADO)
-│       ├── adapter_model.safetensors  # Pesos LoRA
-│       └── adapter_config.json
-├── data/contracts/            # Dataset LEDGAR
-└── docs/                      # Documentación
-```
+3. **Acceder a la Interfaz**
+   Abre en tu navegador: http://localhost:3000
 
 ## 🔑 Conceptos Importantes
 
-### ✅ Selector de Modelo en la UI
-
-La interfaz te permite elegir entre:
-- **Fine-tuned**: Modelo con prompts especializados para análisis legal (+25-30% precisión)
-- **Base**: Modelo general sin especialización
-
-Ambos usan el mismo modelo base (Llama 3.2 3B) pero con diferentes system prompts.
+### ✅ Selector de Modelos Dinámico
+La interfaz de *Contract Analysis* incluye un menú desplegable que lista dinámicamente los modelos disponibles conectados al sistema, divididos en:
+- **Modelos Base:** Modelos fundacionales listos para uso rápido (ej. Llama 3).
+- **Modelos Fine-tuned:** Modelos reentrenados y especializados en el módulo de *Training* que han finalizado su aprendizaje con éxito.
 
 ### ☁️ Groq vs Ollama
-
 **Groq (Recomendado - Por defecto):**
-- API cloud gratuita
-- Ultra-rápido (10x más rápido)
-- Sin instalación (0 GB)
-- Requiere internet
+- API en la nube gratuita. Inferencia ultra-rápida (500+ tokens/segundo).
+- No requiere hardware local sofisticado.
 
 **Ollama (Opcional - Local):**
-- 100% privado
-- Requiere 5GB de espacio
-- Más lento (depende de tu GPU)
-- No requiere internet
+- 100% privado y offline.
+- Requiere tener el modelo descargado localmente (`ollama pull llama3.2`) y cambiar en `.env`: `LLM_PROVIDER=ollama`.
 
-Cambiar entre ambos es solo editar `.env`:
-```env
-LLM_PROVIDER=groq  # o "ollama"
-```
+## 🛠️ Servicios Activos
 
-### ❌ NO necesitas hacer fine-tuning cada vez
-
-El fine-tuning ya está hecho. Solo se usa para:
-- Entrenar con nuevos datasets (1000+ contratos)
-- Especializar en tipos específicos de contratos
-- Mejorar el modelo actual
-
-**Limitación:** Kaggle da 30h GPU/semana, cada entrenamiento tarda 2-4h.
-
-## 🛠️ Servicios
+Al levantar el sistema, se despliegan automáticamente los siguientes microservicios internos:
 
 | Servicio | Puerto | Descripción |
 |----------|--------|-------------|
-| Frontend | 3000 | Interfaz web |
-| Backend API | 8080 | API REST Go |
-| RAG Service | 8001 | Servicio Python de análisis |
-| PostgreSQL | 5432 | Base de datos |
-| MinIO | 9000 | Object storage |
-| Groq API | - | LLM cloud (por defecto) |
-| Ollama | 11434 | LLM local (opcional) |
+| Frontend | 3000 | Interfaz web HTML/JS servida por Nginx |
+| Backend API | 8080 | API REST ultra-rápida desarrollada en Go |
+| RAG Service | 8001 | Motor de IA en Python (FastAPI, Langchain, ChromaDB) |
+| PostgreSQL | 5432 | Base de datos relacional para metadatos |
+| MinIO | 9000 | Object Storage (clon S3) para almacenar los PDFs y documentos |
 
-## 📚 Documentación
+## 🧪 Estructura Básica del Proyecto
 
-- **[CONFIGURACION_GROQ.md](CONFIGURACION_GROQ.md)** - Configurar Groq API (recomendado)
-- **[MODELO_FINE_TUNEADO.md](MODELO_FINE_TUNEADO.md)** - Cómo funciona el modelo
-- **[RAG_SYSTEM_README.md](RAG_SYSTEM_README.md)** - Sistema RAG y agentes
-- **[COMPLETE_USAGE_GUIDE.md](COMPLETE_USAGE_GUIDE.md)** - Guía completa de uso
-- **[DOCKER_QUICKSTART.md](DOCKER_QUICKSTART.md)** - Comandos Docker útiles
-- **[API_EXAMPLES.md](API_EXAMPLES.md)** - Ejemplos de API
-
-## 🧪 Testing
-
-```bash
-# Test conexión frontend-backend
-curl http://localhost:8080/api/v1/health
-
-# Test RAG service
-curl http://localhost:8001/health
-
-# Test Ollama
-ollama list
 ```
-
-## 🔧 Configuración
-
-Crea `.env` en la raíz (opcional, solo para fine-tuning):
-
-```env
-# Solo necesario si vas a entrenar nuevos modelos
-KAGGLE_USERNAME=tu_usuario
-KAGGLE_KEY=tu_api_key
+contracts/
+├── backend/                    # API Go (Gestión de base de datos y archivos)
+│   └── services/               # Motor de IA en Python (RAG, Agentes, embeddings)
+├── frontend/                   # Interfaz de Usuario (HTML, Vanilla JS, CSS)
+├── chroma_db/                  # Base de datos vectorial persistente
+├── data/                       # Datasets de ejemplo
+└── docker-compose.yml          # Orquestador
 ```
 
 ## 🚨 Troubleshooting
 
-### "GROQ_API_KEY not set"
-
-Edita `.env` y agrega tu API key de https://console.groq.com/keys
-
-### "Cannot connect to backend"
-
-Verifica que Docker esté corriendo:
-```bash
-docker-compose ps
-```
-
-### "RAG service not responding"
-
-```bash
-# Reinstalar dependencias
-cd backend/services
-pip install -r requirements.txt
-python rag_service.py
-```
-
-### Cambiar a Ollama local
-
-```bash
-# 1. Instalar Ollama
-# 2. Descargar modelo
-ollama pull llama3.2:3b
-
-# 3. Editar .env
-LLM_PROVIDER=ollama
-```
-
-## 🎓 Tecnologías
-
-- **Backend:** Go 1.23, Fiber, GORM
-- **Frontend:** HTML5, JavaScript, Chart.js
-- **LLM:** Groq API (Llama 3.2 3B) o Ollama local
-- **RAG:** ChromaDB, sentence-transformers
-- **Infraestructura:** Docker, PostgreSQL, MinIO
-- **Fine-tuning:** Kaggle Notebooks, Unsloth (opcional)
-
-## 📊 Modelo
-
-- **Base:** Llama 3.2 3B Instruct
-- **Provider:** Groq API (cloud) o Ollama (local)
-- **Fine-tuning:** System prompts especializados para contratos legales
-- **Mejora:** +25-30% precisión vs modelo base sin especialización
-
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit cambios (`git commit -am 'Agregar funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+- **Error "Failed to load" o "Cannot connection to backend":** Verifica que los servicios de Docker se hayan levantado completamente sin errores de memoria (sobre todo el RAG service). Asegúrate de acceder a través del puerto `3000`.
+- **Análisis muy lento:** Si estás usando Ollama y no tienes GPU dedicada, el análisis de grandes contratos puede llevar varios minutos. Pásate a Groq configurando `.env`.
+- **Despliegue en la nube:** El proyecto cuenta con un `docker-compose.prod.yml` optimizado para servidores como Oracle Cloud (compatible con ARM Ampere A1 de 24GB).
 
 ## 📄 Licencia
 
-MIT License - ver [LICENSE](LICENSE)
-
-## 🆘 Soporte
-
-- **Issues:** GitHub Issues
-- **Documentación:** Ver carpeta `docs/`
-- **Email:** [tu-email]
-
----
-
-**Nota:** LexAnalyzer usa Groq API (cloud) por defecto. No necesitas descargar modelos ni tener GPU.
+MIT License
