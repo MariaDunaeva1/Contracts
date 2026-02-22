@@ -60,6 +60,18 @@ La interfaz de *Contract Analysis* incluye un menú desplegable que lista dinám
 - 100% privado y offline.
 - Requiere tener el modelo descargado localmente (`ollama pull llama3.2`) y cambiar en `.env`: `LLM_PROVIDER=ollama`.
 
+### 🗄️ Almacenamiento y Archivos (MinIO)
+LexAnalyzer utiliza **MinIO** (servidor de almacenamiento de objetos compatible con Amazon S3) dentro de Docker para resguardar todos los documentos originales subidos al sistema (`.pdf`, `.docx`, etc.).
+- **Consola Web (UI):** Puedes explorar los archivos en crudo accediendo a `http://localhost:9001` (Usuario: `minioadmin` / Contraseña: `minioadmin`).
+- **Funcionamiento:** El Backend de Go crea automáticamente el bucket necesario y sube los archivos de los usuarios. El microservicio RAG (Python) posteriormente descarga temporalmente fragmentos de estos archivos desde MinIO cuando necesita analizarlos para buscar cláusulas.
+
+### 🎯 Fine-Tuning Integrado (Kaggle)
+El sistema incluye un **Pipeline de Entrenamiento (Fine-Tuning)** completo gestionado desde la interfaz web, sin necesidad de tocar código:
+1. **Sube tus propios Datasets:** Formato `.json` o `.jsonl` en la sección *Knowledge Base*.
+2. **Lanza un Trabajo (Job):** Selecciona un modelo base, tu dataset, y haz clic en *Start Fine-Tuning*.
+3. **Automatización en Kaggle:** El Backend de Go de LexAnalyzer se conecta automáticamente con la API de Kaggle, levanta un cuaderno jupyter temporal con aceleración GPU (T4x2 gratuitas) y comienza a entrenar tu modelo usando técnicas de parametrización eficiente (LoRA / Unsloth).
+4. **Despliegue Inmediato:** Cuando Kaggle termina, el modelo entrenado se registra en el sistema y aparece automáticamente en el **Selector de Modelos** de la interfaz para poder usarlo en tus próximos análisis de contratos.
+
 ## 🛠️ Servicios Activos
 
 Al levantar el sistema, se despliegan automáticamente los siguientes microservicios internos:
