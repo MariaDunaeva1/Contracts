@@ -270,8 +270,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/utils.js?v=3"></script>
-    <script src="js/api.js?v=3"></script>
+    <script src="js/utils.js?v=4"></script>
+    <script src="js/api.js?v=4"></script>
     <script>
         let currentStep = 1;
         let selectedDataset = null;
@@ -289,14 +289,17 @@
             try {
                 const data = await api.listDatasets(1, 100);
 
-                if (data.data.length === 0) {
+                // Only show JSON/JSONL datasets for fine-tuning
+                const datasets = data.data.filter(ds => ds.type === 'json' || ds.type === 'jsonl' || ds.name.toLowerCase().endsWith('.json') || ds.name.toLowerCase().endsWith('.jsonl'));
+
+                if (datasets.length === 0) {
                     document.getElementById('datasetsLoading').classList.add('hidden');
                     document.getElementById('datasetsEmpty').classList.remove('hidden');
                     return;
                 }
 
                 const select = document.getElementById('datasetSelect');
-                data.data.forEach(dataset => {
+                datasets.forEach(dataset => {
                     const option = document.createElement('option');
                     option.value = dataset.ID;
                     option.textContent = dataset.name;

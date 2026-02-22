@@ -8,16 +8,18 @@ from typing import Dict, Any
 class BaseAgent(ABC):
     """Abstract base class for all agents"""
     
-    def __init__(self, llm_service, use_finetuned: bool = True):
+    def __init__(self, llm_service, use_finetuned: bool = True, model_name: str = None):
         """
         Initialize agent with LLM service
         
         Args:
             llm_service: LLMService instance for text generation
             use_finetuned: Use fine-tuned model (True) or base model (False)
+            model_name: Specific model name override (optional)
         """
         self.llm = llm_service
         self.use_finetuned = use_finetuned
+        self.model_name = model_name
     
     @abstractmethod
     def execute(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -43,7 +45,7 @@ class BaseAgent(ABC):
         Returns:
             Generated text
         """
-        return self.llm.complete(prompt, use_finetuned=self.use_finetuned, **kwargs)
+        return self.llm.complete(prompt, model=self.model_name, use_finetuned=self.use_finetuned, **kwargs)
     
     def parse_response(self, response: str) -> Dict[str, Any]:
         """

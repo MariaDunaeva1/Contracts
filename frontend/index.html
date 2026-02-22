@@ -24,23 +24,14 @@
 
     <!-- Main Content -->
     <div class="container">
-        <!-- Quick Stats -->
-        <div class="grid grid-4 mb-4">
-            <div class="stat-card fade-in">
-                <div class="stat-value" id="totalModels">-</div>
-                <div class="stat-label">Models Trained</div>
-            </div>
-            <div class="stat-card fade-in">
-                <div class="stat-value" id="totalDatasets">-</div>
-                <div class="stat-label">Datasets Uploaded</div>
-            </div>
-        </div>
-
         <!-- Quick Actions -->
         <div class="card mb-4">
             <div class="card-header">Quick Actions</div>
             <div class="card-body flex gap-2">
-                <a href="training-new.html" class="btn btn-primary">
+                <a href="dataset-upload.html" class="btn btn-primary">
+                    📄 Upload Document
+                </a>
+                <a href="training-new.html" class="btn btn-warning">
                     🎯 Fine-tune Model
                 </a>
                 <a href="contract-analysis.html" class="btn btn-success">
@@ -123,8 +114,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/utils.js"></script>
-    <script src="js/api.js"></script>
+    <script src="js/utils.js?v=4"></script>
+    <script src="js/api.js?v=4"></script>
     <script>
         let currentJobs = [];
         let statusFilter = '';
@@ -143,11 +134,10 @@
                 const health = await api.health();
                 console.log('Backend health:', health);
 
-                // Load stats
+                // Load stats (not displayed anymore but kept for backend warm-up if needed)
                 console.log('Loading stats...');
                 const stats = await api.getStats();
                 console.log('Stats loaded:', stats);
-                updateStats(stats);
 
                 // Load recent jobs
                 console.log('Loading jobs...');
@@ -186,11 +176,6 @@
                     </div>
                 `;
             }
-        }
-
-        function updateStats(stats) {
-            document.getElementById('totalModels').textContent = stats.totalModels || 0;
-            document.getElementById('totalDatasets').textContent = stats.totalDatasets || 0;
         }
 
         function displayJobs(jobs) {

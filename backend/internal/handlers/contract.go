@@ -32,6 +32,7 @@ type AnalyzeContractRequest struct {
 	ContractID      string `json:"contract_id"`
 	KnowledgeBaseID string `json:"knowledge_base_id"`
 	UseFinetuned    bool   `json:"use_finetuned"`
+	ModelName       string `json:"model_name"`
 }
 
 // SearchClausesRequest represents a semantic search request

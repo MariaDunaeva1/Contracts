@@ -45,6 +45,7 @@ class AnalyzeRequest(BaseModel):
     contract_id: Optional[str] = Field(default=None, description="Optional contract ID")
     knowledge_base_id: Optional[str] = Field(default=None, description="Optional Knowledge Base/Dataset ID for RAG filtering")
     use_finetuned: bool = Field(default=True, description="Use fine-tuned model (True) or base model (False)")
+    model_name: Optional[str] = Field(default=None, description="Specific model name to use (overrides use_finetuned)")
 
 class SearchRequest(BaseModel):
     query: str = Field(..., description="Search query text")
@@ -83,14 +84,16 @@ async def analyze_contract(req: AnalyzeRequest):
     4. Provides risk assessment
     """
     try:
-        print(f"[API] Analyzing contract: {req.contract_name} (Fine-tuned: {req.use_finetuned})", flush=True)
+        model_info = req.model_name or ('fine-tuned' if req.use_finetuned else 'base')
+        print(f"[API] Analyzing contract: {req.contract_name} (Model: {model_info})", flush=True)
         
         result = orchestrator.analyze_contract(
             contract_text=req.contract_text,
             contract_name=req.contract_name,
             contract_id=req.contract_id,
             use_finetuned=req.use_finetuned,
-            knowledge_base_id=req.knowledge_base_id
+            knowledge_base_id=req.knowledge_base_id,
+            model_name=req.model_name
         )
         
         if result.get('status') == 'error':
@@ -188,6 +191,21 @@ async def get_stats():
             "llm_available": llm_service.is_available()
         }
     
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/models")
+async def list_analysis_models():
+    """List available models for contract analysis"""
+    try:
+        llm_models = llm_service.list_models()
+        return {
+            "provider": llm_service.provider,
+            "models": llm_models,
+            "default_base": llm_service.model_base,
+            "default_finetuned": llm_service.model_finetuned
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

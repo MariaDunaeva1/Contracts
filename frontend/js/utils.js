@@ -218,26 +218,53 @@ function downloadJSON(data, filename) {
 // Validate dataset file
 function validateDatasetFile(file) {
     const maxSize = 500 * 1024 * 1024; // 500MB
-    const allowedTypes = ['application/json', 'text/plain'];
+    const allowedExtensions = ['.json', '.jsonl', '.txt', '.csv', '.md', '.pdf', '.docx'];
 
     if (file.size > maxSize) {
         return { valid: false, error: 'File size exceeds 500MB limit' };
     }
 
-    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.json') && !file.name.endsWith('.jsonl')) {
-        return { valid: false, error: 'Only JSON and JSONL files are allowed' };
+    const fileName = file.name.toLowerCase();
+    const hasValidExt = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+        return { valid: false, error: 'Supported formats: JSON, JSONL, TXT, CSV, MD, PDF, DOCX' };
     }
 
     return { valid: true };
 }
 
+// Detect file format from extension
+function getFileFormat(fileName) {
+    const name = fileName.toLowerCase();
+    if (name.endsWith('.json')) return 'json';
+    if (name.endsWith('.jsonl')) return 'jsonl';
+    if (name.endsWith('.csv')) return 'csv';
+    if (name.endsWith('.md')) return 'markdown';
+    if (name.endsWith('.txt')) return 'text';
+    if (name.endsWith('.pdf')) return 'pdf';
+    if (name.endsWith('.docx')) return 'docx';
+    return 'unknown';
+}
+
 // Parse dataset preview efficiently without loading entire file into memory
 async function parseDatasetPreview(file, maxLines = 10) {
+    const format = getFileFormat(file.name);
+
+    // PDF and DOCX cannot be previewed in the browser — parsing is server-side
+    if (format === 'pdf' || format === 'docx') {
+        return {
+            format: format,
+            total: 'Parsed on server',
+            preview: [{ "info": `${format.toUpperCase()} document`, "message": "This file will be processed on the server. Preview not available in browser." }]
+        };
+    }
+
     return new Promise((resolve, reject) => {
         // Safety check: Don't even try to preview files over 50MB to prevent browser freeze
         if (file.size > 50 * 1024 * 1024) {
             resolve({
-                format: file.name.endsWith('.jsonl') ? 'jsonl' : 'unknown',
+                format: format,
                 total: 'Large file (>50MB)',
                 preview: [{ "info": "Preview disabled", "message": "File is too large to preview in browser. Safe to upload." }]
             });
@@ -255,9 +282,20 @@ async function parseDatasetPreview(file, maxLines = 10) {
                 const text = e.target.result;
                 const lines = text.split('\n').filter(line => line.trim());
 
+                // For plain text formats (txt, csv, md), show raw lines
+                if (format === 'text' || format === 'csv' || format === 'markdown') {
+                    const previewLines = lines.slice(0, maxLines);
+                    const totalLines = file.size <= chunkSize ? lines.length : 'Unknown (large file)';
+                    resolve({
+                        format: format,
+                        total: totalLines,
+                        preview: previewLines.map(line => ({ "text": line })),
+                    });
+                    return;
+                }
+
                 // Try to parse as JSON array
                 try {
-                    // Try parsing the whole chunk if it's small, otherwise parsing might fail on cut JSON
                     if (file.size <= chunkSize) {
                         const data = JSON.parse(text);
                         if (Array.isArray(data) || data.messages) {
@@ -292,7 +330,7 @@ async function parseDatasetPreview(file, maxLines = 10) {
                     preview: preview,
                 });
             } catch (error) {
-                reject(new Error('Invalid JSON format'));
+                reject(new Error('Failed to parse file'));
             }
         };
 

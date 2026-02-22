@@ -251,3 +251,68 @@ func ValidateDataset(content []byte, format string) ValidationResult {
 
 	return result
 }
+
+// ValidateTextDataset validates non-JSON text files (txt, csv, md, pdf, docx)
+func ValidateTextDataset(content []byte, formatType string) ValidationResult {
+	result := ValidationResult{
+		Checks:   make(map[string]bool),
+		Warnings: []string{},
+		Errors:   []string{},
+		Stats: DatasetStats{
+			ClassDist: make(map[string]int),
+		},
+	}
+
+	// For binary formats (pdf, docx), we can't parse content here
+	// Just validate that the file is non-empty and let Python extract text
+	if formatType == "pdf" || formatType == "docx" {
+		if len(content) == 0 {
+			result.Errors = append(result.Errors, "File is empty")
+			result.Valid = false
+			return result
+		}
+
+		result.Stats.NumExamples = 1 // Treat the whole document as 1 example
+		result.Stats.AvgLength = float64(len(content))
+		result.Stats.ClassDist[formatType] = 1
+		result.Checks["format_valid"] = true
+		result.Checks["min_examples"] = true
+		result.Valid = true
+		return result
+	}
+
+	// For text-based formats (txt, csv, md), count lines
+	text := string(content)
+	lines := strings.Split(text, "\n")
+
+	// Filter empty lines
+	nonEmptyLines := 0
+	totalLength := 0
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" {
+			nonEmptyLines++
+			totalLength += len(trimmed)
+		}
+	}
+
+	if nonEmptyLines == 0 {
+		result.Errors = append(result.Errors, "File is empty or contains only blank lines")
+		result.Valid = false
+		return result
+	}
+
+	result.Stats.NumExamples = nonEmptyLines
+	result.Stats.AvgLength = float64(totalLength) / float64(nonEmptyLines)
+	result.Stats.ClassDist[formatType] = nonEmptyLines
+
+	if nonEmptyLines < 1 {
+		result.Errors = append(result.Errors, fmt.Sprintf("File has no content: %d lines", nonEmptyLines))
+	}
+
+	result.Checks["format_valid"] = len(result.Errors) == 0
+	result.Checks["min_examples"] = true // No minimum for text docs
+	result.Valid = len(result.Errors) == 0
+
+	return result
+}

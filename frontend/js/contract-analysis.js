@@ -2,6 +2,22 @@
  * Contract Analysis with RAG
  */
 
+// Base models available (Groq cloud API)
+const BASE_MODELS = [
+    { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B Instant', type: 'base' },
+    { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile', type: 'base' },
+];
+
+// Models from fine-tuning section (available for fine-tuning)
+const FINETUNE_BASE_MODELS = [
+    { id: 'llama-3.2-1b', name: '🦙 Llama 3.2 1B' },
+    { id: 'qwen-2.5-1.5b', name: '🔴 Qwen 2.5 1.5B' },
+    { id: 'llama-3.2-3b', name: '🦙 Llama 3.2 3B' },
+    { id: 'phi-3-mini', name: '💎 Phi-3 Mini (3.8B)' },
+    { id: 'mistral-7b-v0.3', name: '🌪️ Mistral 7B v0.3' },
+    { id: 'gpt2', name: '📜 GPT-2 (124M)' },
+];
+
 
 function displayResults(result) {
     // Show results section
@@ -24,6 +40,7 @@ function displayResults(result) {
         <p><strong>High Risk Clauses:</strong> ${summary.high_risk_count || 0}</p>
         <p><strong>Unfavorable Comparisons:</strong> ${summary.unfavorable_count || 0}</p>
         <p><strong>Risk Score:</strong> ${((summary.risk_score || 0) * 100).toFixed(0)}%</p>
+        <p><strong>Model:</strong> ${result.model_used || 'unknown'}</p>
         <p style="margin-top: 15px;">${riskAssessment.executive_summary || ''}</p>
     `;
 
@@ -125,22 +142,9 @@ async function analyzeContract() {
     const contractText = document.getElementById('contractText').value.trim();
     const contractName = document.getElementById('contractName').value.trim() || 'New Contract';
 
-    // Check if radio button is selected
-    let intelligenceEl = document.querySelector('input[name="intelligence"]:checked');
-
-    // Compatibility fallback for older templates/caches
-    if (!intelligenceEl) {
-        intelligenceEl = document.getElementById('useFinetuned') || document.getElementById('useBase');
-        if (intelligenceEl && !intelligenceEl.checked) {
-            // If we found elements by ID but none is checked, check which one matches logic
-        }
-    }
-
-    if (!intelligenceEl) {
-        alert('Please select Intelligence Type (Base or Fine-tuned)');
-        return;
-    }
-    const useFinetuned = (intelligenceEl.value === 'finetuned') || (intelligenceEl.id === 'useFinetuned');
+    // Get selected model from dropdown
+    const modelSelect = document.getElementById('modelSelect');
+    const selectedModel = modelSelect.value;
     const kbId = document.getElementById('kbSelect').value;
 
     if (!contractText) {
@@ -148,17 +152,28 @@ async function analyzeContract() {
         return;
     }
 
+    if (!selectedModel) {
+        alert('Please select a model');
+        return;
+    }
+
+    // Determine if this is a fine-tuned model or base model
+    const selectedOption = modelSelect.selectedOptions[0];
+    const modelType = selectedOption ? selectedOption.dataset.type : 'base';
+    const useFinetuned = modelType === 'finetuned';
+
     // Show loading
     document.getElementById('loading').classList.add('active');
     document.getElementById('results').classList.remove('active');
     document.getElementById('analyzeBtn').disabled = true;
 
     try {
-        console.log('Calling API...');
+        console.log(`Calling API with model: ${selectedModel} (type: ${modelType})...`);
         const result = await api.analyzeContract({
             contract_text: contractText,
             contract_name: contractName,
             use_finetuned: useFinetuned,
+            model_name: selectedModel,
             knowledge_base_id: kbId
         });
 
@@ -184,9 +199,69 @@ function getFavorabilityBadge(score) {
     }
 }
 
-// Check RAG service health and load datasets on page load
+// Load models into the dropdown
+async function loadModels() {
+    const select = document.getElementById('modelSelect');
+    select.innerHTML = '';
+
+    // Default option
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Select Model --';
+    select.appendChild(defaultOpt);
+
+    // Group 1: Base models (Groq API)
+    const baseGroup = document.createElement('optgroup');
+    baseGroup.label = '🔵 Base Models (Groq API)';
+    BASE_MODELS.forEach(model => {
+        const opt = document.createElement('option');
+        opt.value = model.id;
+        opt.textContent = model.name;
+        opt.dataset.type = 'base';
+        baseGroup.appendChild(opt);
+    });
+    select.appendChild(baseGroup);
+
+    // Group 2: Fine-tunable base models
+    const finetuneBaseGroup = document.createElement('optgroup');
+    finetuneBaseGroup.label = '🟡 Models Available for Fine-tuning';
+    FINETUNE_BASE_MODELS.forEach(model => {
+        const opt = document.createElement('option');
+        opt.value = model.id;
+        opt.textContent = model.name;
+        opt.dataset.type = 'base';
+        finetuneBaseGroup.appendChild(opt);
+    });
+    select.appendChild(finetuneBaseGroup);
+
+    // Group 3: Fine-tuned models (from API)
+    try {
+        const modelsResponse = await api.listModels(1, 100, { status: 'ready' });
+        if (modelsResponse.data && modelsResponse.data.length > 0) {
+            const finetunedGroup = document.createElement('optgroup');
+            finetunedGroup.label = '🟢 Fine-tuned Models';
+            modelsResponse.data.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model.name || `model-${model.ID}`;
+                opt.textContent = `✨ ${model.name || model.base_model} (${model.base_model || 'custom'})`;
+                opt.dataset.type = 'finetuned';
+                opt.dataset.modelId = model.ID;
+                finetunedGroup.appendChild(opt);
+            });
+            select.appendChild(finetunedGroup);
+        }
+    } catch (error) {
+        console.warn('Could not load fine-tuned models:', error);
+    }
+
+    // Pre-select the versatile model
+    select.value = 'llama-3.3-70b-versatile';
+}
+
+// Check RAG service health and load datasets/models on page load
 window.addEventListener('DOMContentLoaded', async () => {
     loadKnowledgeBases();
+    loadModels();
 
     try {
         const response = await fetch('/api/v1/rag/health');

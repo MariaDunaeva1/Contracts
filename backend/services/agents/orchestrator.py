@@ -34,7 +34,8 @@ class AgentOrchestrator:
         contract_name: str = "New Contract",
         contract_id: str = None,
         use_finetuned: bool = True,
-        knowledge_base_id: str = None
+        knowledge_base_id: str = None,
+        model_name: str = None
     ) -> Dict[str, Any]:
         """
         Full contract analysis workflow
@@ -44,6 +45,8 @@ class AgentOrchestrator:
             contract_name: Human-readable name
             contract_id: Optional ID (generated if not provided)
             use_finetuned: Use fine-tuned model (True) or base model (False)
+            knowledge_base_id: Optional Knowledge Base ID for filtering
+            model_name: Specific model name override (optional)
         
         Returns:
             Dict with complete analysis
@@ -55,21 +58,24 @@ class AgentOrchestrator:
             contract_id = f"contract_{uuid.uuid4().hex[:12]}"
         
         # Initialize agents with model selection
-        self.extractor = ExtractorAgent(self.llm, use_finetuned=use_finetuned)
-        self.comparator = ComparatorAgent(self.llm, use_finetuned=use_finetuned)
-        self.risk = RiskAgent(self.llm, use_finetuned=use_finetuned)
+        self.extractor = ExtractorAgent(self.llm, use_finetuned=use_finetuned, model_name=model_name)
+        self.comparator = ComparatorAgent(self.llm, use_finetuned=use_finetuned, model_name=model_name)
+        self.risk = RiskAgent(self.llm, use_finetuned=use_finetuned, model_name=model_name)
+        
+        # Determine model label for result
+        model_label = model_name or ('fine-tuned' if use_finetuned else 'base')
         
         result = {
             'contract_id': contract_id,
             'contract_name': contract_name,
-            'model_used': 'fine-tuned' if use_finetuned else 'base',
+            'model_used': model_label,
             'status': 'processing',
             'steps': {}
         }
         
         try:
             # Step 1: Extract clauses
-            print(f"[Orchestrator] Step 1: Extracting clauses (model: {'fine-tuned' if use_finetuned else 'base'})...", flush=True)
+            print(f"[Orchestrator] Step 1: Extracting clauses (model: {model_label})...", flush=True)
             extraction_result = self.extractor.execute({
                 'contract_text': contract_text
             })

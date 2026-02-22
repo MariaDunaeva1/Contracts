@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LexAnalyzer - Upload Dataset</title>
+    <title>LexAnalyzer - Upload Document</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -25,33 +25,34 @@
 
     <!-- Main Content -->
     <div class="container">
-        <h1 class="mb-3">📤 Upload Dataset</h1>
+        <h1 class="mb-3">📄 Upload Document</h1>
 
         <!-- Upload Form -->
         <div class="card mb-4">
-            <div class="card-header">Dataset Information</div>
+            <div class="card-header">Document Information</div>
             <div class="card-body">
                 <div class="form-group">
-                    <label class="form-label">Dataset Name *</label>
-                    <input type="text" id="datasetName" class="form-control"
-                        placeholder="e.g., Sentiment Analysis Dataset" required>
+                    <label class="form-label" for="datasetName">Document Name *</label>
+                    <input type="text" id="datasetName" class="form-control" placeholder="e.g., NDA Contracts 2024"
+                        required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea id="datasetDescription" class="form-control"
-                        placeholder="Brief description of your dataset..."></textarea>
+                    <label class="form-label" for="datasetDescription">Description</label>
+                    <textarea id="datasetDescription" class="form-control" rows="2"
+                        placeholder="Brief description of the document contents"></textarea>
                 </div>
 
                 <!-- Drag & Drop Area -->
                 <div class="form-group">
-                    <label class="form-label">Dataset File (JSON/JSONL) *</label>
+                    <label class="form-label">Document File *</label>
                     <div id="dropzone" class="dropzone">
                         <div class="dropzone-icon">📁</div>
                         <p><strong>Drag & drop your file here</strong></p>
                         <p class="text-muted">or click to browse</p>
-                        <p class="text-muted mt-2">Supported: JSON, JSONL (max 500MB)</p>
-                        <input type="file" id="fileInput" accept=".json,.jsonl" style="display: none;">
+                        <p class="text-muted mt-2">Supported: JSON, JSONL, TXT, CSV, MD, PDF, DOCX (max 500MB)</p>
+                        <input type="file" id="fileInput" accept=".json,.jsonl,.txt,.csv,.md,.pdf,.docx"
+                            style="display: none;">
                     </div>
                 </div>
 
@@ -77,7 +78,7 @@
                 <!-- Actions -->
                 <div class="mt-3 flex gap-2">
                     <button id="uploadBtn" onclick="uploadDataset()" class="btn btn-primary" disabled>
-                        Upload Dataset
+                        Upload Document
                     </button>
                     <a href="index.html" class="btn btn-outline">Cancel</a>
                 </div>
@@ -86,7 +87,7 @@
 
         <!-- Validation Results -->
         <div id="validationCard" class="card hidden">
-            <div class="card-header">✅ Validation Results</div>
+            <div class="card-header">Validating Document</div>
             <div class="card-body">
                 <div class="grid grid-3 mb-3">
                     <div class="stat-card">
@@ -103,15 +104,15 @@
                     </div>
                 </div>
 
-                <!-- Dataset Preview -->
+                <!-- Document Preview -->
                 <div class="mt-3">
-                    <h4>Dataset Preview (First 10 samples)</h4>
+                    <h4>Document Preview (First 10 samples)</h4>
                     <div id="previewContainer" class="mt-2" style="max-height: 400px; overflow-y: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Content</th>
+                                    <th>Document Name</th>
                                 </tr>
                             </thead>
                             <tbody id="previewTableBody">

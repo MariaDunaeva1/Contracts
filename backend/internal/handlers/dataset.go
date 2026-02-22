@@ -46,16 +46,40 @@ func UploadDataset(c *gin.Context) {
 		return
 	}
 
-	// 3. Validate
+	// 3. Validate extension
 	ext := filepath.Ext(header.Filename)
-	if ext != ".json" && ext != ".jsonl" {
+	allowedExts := map[string]string{
+		".json":  "application/json",
+		".jsonl": "application/json",
+		".txt":   "text/plain",
+		".csv":   "text/csv",
+		".md":    "text/markdown",
+		".pdf":   "application/pdf",
+		".docx":  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+	}
+
+	contentType, extAllowed := allowedExts[ext]
+	if !extAllowed {
 		logger.Warn("Unsupported file extension", zap.String("ext", ext))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Only .json and .jsonl files are supported currently"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Supported formats: .json, .jsonl, .txt, .csv, .md, .pdf, .docx"})
 		return
 	}
 
 	logger.Info("Validating dataset", zap.String("filename", header.Filename), zap.Int("size", len(content)))
-	validationResult := validator.ValidateDataset(content, "json")
+
+	// Determine dataset type and validate accordingly
+	isJSON := ext == ".json" || ext == ".jsonl"
+	var validationResult validator.ValidationResult
+	var datasetType string
+
+	if isJSON {
+		datasetType = "json"
+		validationResult = validator.ValidateDataset(content, "json")
+	} else {
+		datasetType = ext[1:] // Remove the leading dot
+		validationResult = validator.ValidateTextDataset(content, datasetType)
+	}
+
 	if !validationResult.Valid {
 		logger.Warn("Dataset validation failed", zap.Any("errors", validationResult.Errors))
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -67,7 +91,6 @@ func UploadDataset(c *gin.Context) {
 
 	// 4. Upload to MinIO
 	objectName := fmt.Sprintf("%d_%s", time.Now().Unix(), header.Filename)
-	contentType := "application/json"
 	ctx := c.Request.Context()
 
 	logger.Info("Uploading to MinIO", zap.String("object", objectName))
@@ -87,7 +110,7 @@ func UploadDataset(c *gin.Context) {
 		Name:              name,
 		Description:       description,
 		FilePath:          objectName,
-		Type:              "json",
+		Type:              datasetType,
 		NumExamples:       validationResult.Stats.NumExamples,
 		AvgLength:         validationResult.Stats.AvgLength,
 		ValidationStatus:  "valid",
