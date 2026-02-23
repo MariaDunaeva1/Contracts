@@ -82,89 +82,143 @@ func ValidateDataset(content []byte, format string) ValidationResult {
 	var chatExamples []DatasetChat
 
 	// 1. Parsing
-	// Try parsing as simple text/label first
-	err := json.Unmarshal(content, &examples)
 	isChat := false
 
-	if err != nil {
-		// Try parsing as chat/messages
-		err = json.Unmarshal(content, &chatExamples)
-		if err != nil {
-			// Try parsing as instruction/input/output
-			var instructExamples []DatasetInstruction
-			err = json.Unmarshal(content, &instructExamples)
-			if err == nil && len(instructExamples) > 0 && instructExamples[0].Instruction != "" {
-				// Convert to standard examples for internal use
-				examples = make([]DatasetExample, len(instructExamples))
-				for i, ie := range instructExamples {
-					text := ie.Instruction
-					if ie.Input != "" {
-						text += "\n\nInput: " + ie.Input
-					}
-					examples[i] = DatasetExample{
-						Text:  text,
-						Label: ie.Output,
-					}
-				}
-			} else {
-				// Try checking for SQuAD/CUAD dictionary format ("data": [...])
-				var cuadDataset CUADDataset
-				if err = json.Unmarshal(content, &cuadDataset); err == nil && len(cuadDataset.Data) > 0 {
-					// Convert CUAD format to flat examples
-					for _, data := range cuadDataset.Data {
-						for _, para := range data.Paragraphs {
-							for _, qa := range para.Qas {
-								label := "Unknown"
-								if len(qa.Answers) > 0 {
-									label = qa.Answers[0].Text
-								} else if qa.IsImpossible {
-									label = "None"
-								}
+	firstChar := byte(0)
+	for _, b := range content {
+		if b != ' ' && b != '\t' && b != '\n' && b != '\r' {
+			firstChar = b
+			break
+		}
+	}
 
-								// We map Question + Context -> Extracted Answer
-								examples = append(examples, DatasetExample{
-									Text:  "Question: " + qa.Question + "\n\nContext: " + para.Context,
-									Label: label,
-								})
+	if firstChar == '[' {
+		// Try parsing as JSON array
+		var rawList []json.RawMessage
+		if err := json.Unmarshal(content, &rawList); err == nil && len(rawList) > 0 {
+			// Probe the first element
+			var first map[string]interface{}
+			if json.Unmarshal(rawList[0], &first) == nil {
+				if _, ok := first["messages"]; ok {
+					isChat = true
+					chatExamples = make([]DatasetChat, 0, len(rawList))
+					for _, raw := range rawList {
+						var chatEx DatasetChat
+						if json.Unmarshal(raw, &chatEx) == nil && len(chatEx.Messages) > 0 {
+							chatExamples = append(chatExamples, chatEx)
+						}
+					}
+				} else if _, ok := first["instruction"]; ok {
+					examples = make([]DatasetExample, 0, len(rawList))
+					for _, raw := range rawList {
+						var ie DatasetInstruction
+						if json.Unmarshal(raw, &ie) == nil {
+							text := ie.Instruction
+							if ie.Input != "" {
+								text += "\n\nInput: " + ie.Input
 							}
+							examples = append(examples, DatasetExample{Text: text, Label: ie.Output})
+						}
+					}
+				} else if _, ok := first["text"]; ok {
+					examples = make([]DatasetExample, 0, len(rawList))
+					for _, raw := range rawList {
+						var ex DatasetExample
+						if json.Unmarshal(raw, &ex) == nil && ex.Text != "" {
+							examples = append(examples, ex)
 						}
 					}
 				} else {
-					// Try JSONL if it fails as a single array or dict
-					lines := strings.Split(string(content), "\n")
-					examples = []DatasetExample{}
-					chatExamples = []DatasetChat{}
-
-					for i, line := range lines {
-						if strings.TrimSpace(line) == "" {
-							continue
+					result.Errors = append(result.Errors, "Unrecognized JSON array format based on first element")
+				}
+			} else {
+				result.Errors = append(result.Errors, "Invalid JSON array elements")
+			}
+		} else {
+			result.Errors = append(result.Errors, "Dataset looks like a JSON array but failed to parse")
+		}
+	} else if firstChar == '{' {
+		// Try parsing as dictionary (CUAD)
+		var cuadDataset CUADDataset
+		if err := json.Unmarshal(content, &cuadDataset); err == nil && len(cuadDataset.Data) > 0 {
+			// Convert CUAD format to flat examples
+			for _, data := range cuadDataset.Data {
+				for _, para := range data.Paragraphs {
+					for _, qa := range para.Qas {
+						label := "Unknown"
+						if len(qa.Answers) > 0 {
+							label = qa.Answers[0].Text
+						} else if qa.IsImpossible {
+							label = "None"
 						}
-						var ex DatasetExample
-						var chatEx DatasetChat
-						var instEx DatasetInstruction
-
-						if json.Unmarshal([]byte(line), &ex) == nil && ex.Text != "" {
-							examples = append(examples, ex)
-						} else if json.Unmarshal([]byte(line), &chatEx) == nil && len(chatEx.Messages) > 0 {
-							chatExamples = append(chatExamples, chatEx)
-							isChat = true
-						} else if json.Unmarshal([]byte(line), &instEx) == nil && instEx.Instruction != "" {
-							text := instEx.Instruction
-							if instEx.Input != "" {
-								text += "\n\nInput: " + instEx.Input
-							}
-							examples = append(examples, DatasetExample{
-								Text:  text,
-								Label: instEx.Output,
-							})
-						} else {
-							result.Errors = append(result.Errors, fmt.Sprintf("Line %d: invalid JSON structure", i+1))
-						}
+						examples = append(examples, DatasetExample{
+							Text:  "Question: " + qa.Question + "\n\nContext: " + para.Context,
+							Label: label,
+						})
 					}
 				}
 			}
 		} else {
-			isChat = true
+			result.Errors = append(result.Errors, "Unrecognized JSON object format (expected CUAD)")
+		}
+	} else {
+		// Try JSONL
+		lines := strings.Split(string(content), "\n")
+		examples = make([]DatasetExample, 0, len(lines)/2+1)
+		chatExamples = make([]DatasetChat, 0, len(lines)/2+1)
+
+		schemaDetected := ""
+		for i, line := range lines {
+			if strings.TrimSpace(line) == "" {
+				continue
+			}
+
+			if schemaDetected == "" {
+				var first map[string]interface{}
+				if json.Unmarshal([]byte(line), &first) == nil {
+					if _, ok := first["messages"]; ok {
+						schemaDetected = "chat"
+						isChat = true
+					} else if _, ok := first["instruction"]; ok {
+						schemaDetected = "instruction"
+					} else if _, ok := first["text"]; ok {
+						schemaDetected = "example"
+					} else {
+						result.Errors = append(result.Errors, fmt.Sprintf("Line %d: unrecognized schema", i+1))
+						continue
+					}
+				} else {
+					result.Errors = append(result.Errors, fmt.Sprintf("Line %d: invalid JSON line", i+1))
+					continue
+				}
+			}
+
+			if schemaDetected == "chat" {
+				var chatEx DatasetChat
+				if err := json.Unmarshal([]byte(line), &chatEx); err == nil && len(chatEx.Messages) > 0 {
+					chatExamples = append(chatExamples, chatEx)
+				} else {
+					result.Errors = append(result.Errors, fmt.Sprintf("Line %d: invalid chat formatting", i+1))
+				}
+			} else if schemaDetected == "instruction" {
+				var instEx DatasetInstruction
+				if err := json.Unmarshal([]byte(line), &instEx); err == nil && instEx.Instruction != "" {
+					text := instEx.Instruction
+					if instEx.Input != "" {
+						text += "\n\nInput: " + instEx.Input
+					}
+					examples = append(examples, DatasetExample{Text: text, Label: instEx.Output})
+				} else {
+					result.Errors = append(result.Errors, fmt.Sprintf("Line %d: invalid instruction formatting", i+1))
+				}
+			} else if schemaDetected == "example" {
+				var ex DatasetExample
+				if err := json.Unmarshal([]byte(line), &ex); err == nil && ex.Text != "" {
+					examples = append(examples, ex)
+				} else {
+					result.Errors = append(result.Errors, fmt.Sprintf("Line %d: invalid text label formatting", i+1))
+				}
+			}
 		}
 	}
 
