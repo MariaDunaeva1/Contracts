@@ -294,7 +294,7 @@ async function parseDatasetPreview(file, maxLines = 10) {
                     return;
                 }
 
-                // Try to parse as JSON array
+                // Try to parse as JSON array (if it fits in the chunk or is complete)
                 try {
                     if (file.size <= chunkSize) {
                         const data = JSON.parse(text);
@@ -309,7 +309,26 @@ async function parseDatasetPreview(file, maxLines = 10) {
                         }
                     }
                 } catch (e) {
-                    // Not a complete JSON array or too large, fallback to line-by-line
+                    // Not a complete JSON array or too large, fallback to regex extraction for large JSON arrays
+                }
+
+                if (format === 'json') {
+                    // Attempt to extract objects using basic RegExp if it's a large JSON array and JSON.parse failed
+                    const preview = [];
+                    const objRegex = /\{[^{}]*\}/g; // Basic regex to match simple non-nested objects or find the start
+                    let match;
+                    let matchesFound = 0;
+
+                    // A more robust but simple way for preview is just to split by "},{" or "\n" if it's pretty-printed
+                    // For a reliable preview, we can just send back raw text chunks
+                    const linesPreview = lines.slice(0, maxLines * 5).join('\n');
+
+                    resolve({
+                        format: 'json',
+                        total: 'Unknown (large file)',
+                        preview: [{ "info": "Large JSON file", "preview_text": linesPreview.substring(0, 1000) + "..." }],
+                    });
+                    return;
                 }
 
                 // Parse as JSONL - only take complete lines (ignore last potentially cut line)
